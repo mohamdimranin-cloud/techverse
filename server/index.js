@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const QRCode = require('qrcode')
+const { v2: cloudinary } = require('cloudinary')
 const { pool, initDB } = require('./db')
 const {
   default: makeWASocket,
@@ -18,7 +19,25 @@ const path = require('path')
 
 const app = express()
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' }))
-app.use(express.json({ limit: '50mb' })) // for base64 PPT/images
+app.use(express.json({ limit: '50mb' }))
+
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+
+async function uploadToCloudinary(base64Data, filename) {
+  const result = await cloudinary.uploader.upload(base64Data, {
+    resource_type: 'raw',
+    folder: 'techverse_ppts',
+    public_id: filename.replace(/\.[^/.]+$/, ''),
+    use_filename: true,
+    overwrite: false,
+  })
+  return result.secure_url
+} // for base64 PPT/images
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret'
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH
@@ -61,9 +80,14 @@ app.post('/api/register', async (req, res) => {
         [reg.id, m.name, m.email, m.phone, m.role || '', i === 0]
       )
     }
-    // Store PPT base64 in DB if provided (small files only; large files should use object storage)
+    // Upload PPT to Cloudinary if provided
     if (ppt?.data) {
-      await client.query(`UPDATE registrations SET ppt_data=$1 WHERE id=$2`, [ppt.data, reg.id])
+      try {
+        const pptUrl = await uploadToCloudinary(ppt.data, `${ticketId}_${ppt.name}`)
+        await client.query(`UPDATE registrations SET ppt_url=$1 WHERE id=$2`, [pptUrl, reg.id])
+      } catch (err) {
+        console.error('Cloudinary upload failed:', err.message)
+      }
     }
     await client.query('COMMIT')
     res.json({ success: true, id: reg.id, ticketId })
@@ -95,9 +119,11 @@ app.delete('/api/registrations/:id', requireAuth, async (req, res) => {
 })
 
 app.get('/api/registrations/:id/ppt', requireAuth, async (req, res) => {
-  const { rows } = await pool.query(`SELECT ppt_data, ppt_name FROM registrations WHERE id=$1`, [req.params.id])
-  if (!rows[0]?.ppt_data) return res.status(404).json({ error: 'No PPT found' })
-  res.json({ data: rows[0].ppt_data, name: rows[0].ppt_name })
+  const { rows } = await pool.query(`SELECT ppt_url, ppt_data, ppt_name FROM registrations WHERE id=$1`, [req.params.id])
+  if (!rows[0]) return res.status(404).json({ error: 'Not found' })
+  if (rows[0].ppt_url) return res.json({ url: rows[0].ppt_url, name: rows[0].ppt_name })
+  if (rows[0].ppt_data) return res.json({ data: rows[0].ppt_data, name: rows[0].ppt_name })
+  res.status(404).json({ error: 'No PPT found' })
 })
 
 // ── Check-in ──────────────────────────────────────────────────

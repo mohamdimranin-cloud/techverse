@@ -189,11 +189,16 @@ export default function Admin() {
 
   const downloadPpt = async (reg) => {
     const data = await downloadPptAPI(reg.id)
-    if (!data?.data) return alert('PPT not found.')
-    const a = document.createElement('a')
-    a.href = data.data
-    a.download = data.name
-    a.click()
+    if (!data) return alert('PPT not found.')
+    if (data.url) {
+      // Cloudinary URL — open directly
+      window.open(data.url, '_blank')
+    } else if (data.data) {
+      const a = document.createElement('a')
+      a.href = data.data
+      a.download = data.name
+      a.click()
+    }
   }
 
   const domains = useMemo(() => ['All', ...new Set(registrations.map(r => r.domain))], [registrations])
