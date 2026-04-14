@@ -2,6 +2,7 @@ import { useRef, Suspense, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, OrbitControls, Environment, ContactShadows, Center, Bounds } from '@react-three/drei'
 import * as THREE from 'three'
+import { useDeviceCapability } from '../hooks/useDeviceCapability'
 
 function RobotModel() {
   const groupRef = useRef()
@@ -115,20 +116,31 @@ function EnergyOrbs() {
 useGLTF.preload('/robot.glb')
 
 export default function Robot3D() {
+  const { isLowEnd } = useDeviceCapability()
+
+  if (isLowEnd) {
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src="/robot-fallback.png" alt="Robot" style={{ maxHeight: '80%', maxWidth: '80%', objectFit: 'contain', filter: 'drop-shadow(0 0 30px rgba(168,85,247,0.5))' }}
+          onError={e => { e.target.style.fontSize = '8rem'; e.target.outerHTML = '<div style="font-size:8rem;animation:none">🤖</div>' }} />
+      </div>
+    )
+  }
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
       <Canvas
         camera={{ position: [0, 0.2, 5], fov: 42 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
         style={{ background: 'transparent' }}
+        frameloop="demand"
+        shadows={false}
       >
-        <ambientLight intensity={0.15} />
-        <pointLight position={[3, 5, 4]} intensity={8} color="#a855f7" />
-        <pointLight position={[-3, -1, 3]} intensity={5} color="#22d3ee" />
-        <pointLight position={[0, 5, -2]} intensity={4} color="#38bdf8" />
-        <pointLight position={[0, 0, 3]} intensity={4} color="#7c3aed" />
-        <spotLight position={[0, 6, 2]} intensity={5} color="#ffffff" angle={0.35} penumbra={1} />
+        <ambientLight intensity={0.3} />
+        <pointLight position={[3, 5, 4]} intensity={6} color="#a855f7" />
+        <pointLight position={[-3, -1, 3]} intensity={4} color="#22d3ee" />
+        <spotLight position={[0, 6, 2]} intensity={4} color="#ffffff" angle={0.35} penumbra={1} />
 
         <Suspense fallback={null}>
           <RobotModel />

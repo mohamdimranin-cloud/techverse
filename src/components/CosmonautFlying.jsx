@@ -1,6 +1,7 @@
 import { useRef, Suspense, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, Environment } from '@react-three/drei'
+import { useDeviceCapability } from '../hooks/useDeviceCapability'
 
 function Cosmonaut() {
   const groupRef = useRef()
@@ -80,8 +81,11 @@ function Cosmonaut() {
 useGLTF.preload('/cosmonaut.glb')
 
 export default function CosmonautFlying() {
+  const { isLowEnd } = useDeviceCapability()
   const [visible, setVisible] = useState(false)
   const [done, setDone] = useState(false)
+
+  if (isLowEnd) return null
 
   useEffect(() => {
     if (done) return

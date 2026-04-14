@@ -1,6 +1,7 @@
 import { useRef, Suspense, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, Environment } from '@react-three/drei'
+import { useDeviceCapability } from '../hooks/useDeviceCapability'
 
 function SolarModel() {
   const groupRef = useRef()
@@ -27,7 +28,10 @@ function SolarModel() {
 useGLTF.preload('/solar_system_animation.glb')
 
 export default function SolarSystem() {
+  const { isLowEnd } = useDeviceCapability()
   const [opacity, setOpacity] = useState(0)
+
+  if (isLowEnd) return null
 
   useEffect(() => {
     const about = document.getElementById('about')
@@ -54,9 +58,11 @@ export default function SolarSystem() {
     }}>
       <Canvas
         camera={{ position: [0, 15, 65], fov: 42 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
         style={{ background: 'transparent' }}
+        frameloop="demand"
+        shadows={false}
       >
         <ambientLight intensity={0.2} />
         <pointLight position={[0, 0, 0]} intensity={3} color="#fff7e0" distance={40} />

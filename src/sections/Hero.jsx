@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, Suspense, lazy } from 'react'
+import { useDeviceCapability } from '../hooks/useDeviceCapability'
 import styles from './Hero.module.css'
 
 const Robot3D = lazy(() => import('../components/Robot3D'))
 
 export default function Hero() {
+  const { isLowEnd } = useDeviceCapability()
   const orbRef = useRef(null)
 
   useEffect(() => {
@@ -43,11 +45,15 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Right: 3D Robot */}
+      {/* Right: 3D Robot or fallback */}
       <div className={styles.robotWrap}>
-        <Suspense fallback={<div className={styles.robotFallback}>🤖</div>}>
-          <Robot3D />
-        </Suspense>
+        {isLowEnd ? (
+          <div className={styles.robotFallback}>🤖</div>
+        ) : (
+          <Suspense fallback={<div className={styles.robotFallback}>🤖</div>}>
+            <Robot3D />
+          </Suspense>
+        )}
       </div>
     </section>
   )

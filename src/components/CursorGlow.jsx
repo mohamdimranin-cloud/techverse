@@ -1,11 +1,14 @@
 import { useEffect, useRef } from 'react'
+import { useDeviceCapability } from '../hooks/useDeviceCapability'
 
 const MAX = 80
 
 export default function CursorGlow() {
+  const { isLowEnd } = useDeviceCapability()
   const canvasRef = useRef(null)
 
   useEffect(() => {
+    if (isLowEnd) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const trail = []
