@@ -1,0 +1,27 @@
+.timeline { position: relative; display: flex; flex-direction: column; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(to bottom, var(--neon-purple), var(--neon-blue));
+}
+.item { display: flex; align-items: flex-start; gap: 2rem; padding-bottom: 2rem; }
+.dot {
+  flex-shrink: 0;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+  box-shadow: 0 0 15px rgba(168,85,247,0.5);
+  z-index: 1;
+}
+.card { flex: 1; }
+.step {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  color: var(--neon-cyan);
+  letter-spacing: 0.1em;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.card h4 { font-size: 1.05rem; margin-bottom: 0.3rem; }
+.card p { font-size: 0.85rem; color: var(--text-muted); }

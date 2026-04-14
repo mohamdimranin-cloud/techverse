@@ -1,0 +1,4 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+.card { display: flex; align-items: center; gap: 1rem; }
+.card span { font-size: 2rem; flex-shrink: 0; }
+.card p { color: var(--text-muted); font-size: 0.95rem; }

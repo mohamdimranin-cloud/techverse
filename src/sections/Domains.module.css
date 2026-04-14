@@ -1,0 +1,49 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+.card {
+  text-align: center;
+  border-color: color-mix(in srgb, var(--clr) 30%, transparent);
+  transition: all 0.3s ease;
+  padding: 1.2rem 0.8rem;
+}
+.card:hover {
+  border-color: var(--clr);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--clr) 25%, transparent);
+  transform: translateY(-6px);
+}
+.card h3 { font-size: 0.82rem; font-weight: 600; line-height: 1.3; }
+.planet {
+  font-size: 2.5rem;
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--clr) 20%, transparent), transparent);
+  border: 1px solid color-mix(in srgb, var(--clr) 40%, transparent);
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.openNote {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  border: 1px dashed rgba(168,85,247,0.3);
+  border-radius: 12px;
+  padding: 0.9rem 1.5rem;
+  background: rgba(168,85,247,0.05);
+}
+.openNote strong { color: var(--neon-purple); }

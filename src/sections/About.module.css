@@ -1,0 +1,15 @@
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+.card p { color: var(--text-muted); line-height: 1.8; margin-bottom: 1rem; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.stat { text-align: center; }
+.num {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.label { font-size: 0.85rem; color: var(--text-muted); }
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }

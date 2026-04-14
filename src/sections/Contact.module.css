@@ -1,0 +1,14 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+.card { display: flex; align-items: center; gap: 1rem; }
+.card span { font-size: 2rem; }
+.card h4 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+.card p { font-size: 1rem; color: var(--neon-cyan); }
+
+.mapLink {
+  color: var(--neon-cyan);
+  font-size: 1rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s;
+}
+.mapLink:hover { opacity: 0.75; }

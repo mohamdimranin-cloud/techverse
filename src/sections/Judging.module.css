@@ -1,0 +1,6 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; }
+.card { text-align: center; position: relative; overflow: hidden; padding-bottom: 1.8rem; }
+.bar { position: absolute; bottom: 0; left: 0; height: 3px; }
+.icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+.card h4 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+.card p { font-size: 0.8rem; color: var(--text-muted); }
