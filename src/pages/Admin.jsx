@@ -38,7 +38,22 @@ export default function Admin() {
     setTimeout(() => setToast(null), 3500)
   }
   const [waConnected, setWaConnected] = useState(false)
-  const reload = () => fetchRegistrations().then(setRegistrations)
+  const reload = () => fetchRegistrations().then(rows => {
+    // Normalize snake_case DB fields to camelCase for the UI
+    setRegistrations(rows.map(r => ({
+      ...r,
+      teamName: r.team_name || r.teamName,
+      projectTitle: r.project_title || r.projectTitle,
+      projectDesc: r.project_desc || r.projectDesc,
+      txnId: r.txn_id || r.txnId,
+      ticketId: r.ticket_id || r.ticketId,
+      teamSize: r.team_size || r.teamSize,
+      registeredAt: r.registered_at || r.registeredAt,
+      checkedIn: r.checked_in || r.checkedIn,
+      checkedInAt: r.checked_in_at || r.checkedInAt,
+      ppt: (r.ppt_name || r.ppt) ? { name: r.ppt_name || r.ppt?.name, size: r.ppt_size || r.ppt?.size } : null,
+    })))
+  })
   const [waQr, setWaQr] = useState(null)
   const [showQr, setShowQr] = useState(false)
 
