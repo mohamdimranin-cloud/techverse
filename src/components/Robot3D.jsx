@@ -134,7 +134,7 @@ export default function Robot3D() {
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
         style={{ background: 'transparent' }}
-        frameloop="demand"
+        frameloop="always"
         shadows={false}
       >
         <ambientLight intensity={0.3} />

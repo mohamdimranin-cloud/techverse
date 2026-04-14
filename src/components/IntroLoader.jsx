@@ -48,7 +48,7 @@ export default function IntroLoader({ onDone }) {
             gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
             onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
             style={{ background: 'transparent' }}
-            frameloop="demand"
+            frameloop="always"
             shadows={false}
           >
             <ambientLight intensity={0.5} />
