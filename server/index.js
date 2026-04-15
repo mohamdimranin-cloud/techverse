@@ -276,6 +276,15 @@ app.post('/api/notify-status', requireAuth, async (req, res) => {
   res.json({ success: true, results })
 })
 
+// ── Keep-alive ping ───────────────────────────────────────────
+app.get('/ping', (req, res) => res.send('pong'))
+
+// Self-ping every 14 minutes to prevent Render sleep
+setInterval(() => {
+  const url = process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 3001}`
+  fetch(`${url}/ping`).catch(() => {})
+}, 14 * 60 * 1000)
+
 // ── Start ─────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001
 initDB().then(() => {
