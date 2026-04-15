@@ -309,12 +309,16 @@ app.post('/api/send-ticket', async (req, res) => {
         results.whatsapp.push({ name: m.name, status: 'sent' })
       } catch (e) { results.whatsapp.push({ name: m.name, status: 'failed', error: e.message }) }
     }
+  } else {
+    console.log('⚠️ WhatsApp not connected, skipping WA ticket send')
+    members.forEach(m => results.whatsapp.push({ name: m.name, status: 'skipped' }))
   }
   // Email
+  console.log(`📧 Email config: USER=${process.env.EMAIL_USER ? '✅' : '❌'} PASS=${process.env.EMAIL_PASS ? '✅' : '❌'}`)
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } })
     for (const m of members) {
-      if (!m.email) continue
+      if (!m.email) { console.log(`⚠️ No email for member ${m.name}`); continue }
       try {
         await transporter.sendMail({
           from: `TechVerse 2026 <${process.env.EMAIL_USER}>`, to: m.email,
@@ -322,9 +326,15 @@ app.post('/api/send-ticket', async (req, res) => {
           html: `<div style="background:#020817;color:#e2e8f0;font-family:sans-serif;padding:32px;border-radius:16px;max-width:500px;margin:auto"><h1 style="color:#a855f7">🎟️ TechVerse Hackathon 2026</h1><p>Hi <strong>${m.name}</strong>, you're shortlisted!</p><div style="background:#0a0f1e;border:1px solid #a855f7;border-radius:12px;padding:20px;margin:20px 0;text-align:center"><p style="color:#94a3b8;font-size:12px">TICKET ID</p><p style="color:#22d3ee;font-family:monospace;font-size:20px;font-weight:bold">${ticketId}</p><img src="cid:qrcode" style="width:200px;height:200px;border-radius:8px;margin-top:12px"/></div><p><strong>Team:</strong> ${teamName} | <strong>Domain:</strong> ${domain}</p><p><strong>Date:</strong> 9 & 10 May 2026 | <strong>Venue:</strong> Bearys Institute of Technology</p></div>`,
           attachments: [{ filename: `ticket-${ticketId}.png`, content: qrBuffer, cid: 'qrcode' }],
         })
+        console.log(`✅ Ticket email sent to ${m.email}`)
         results.email.push({ name: m.name, status: 'sent' })
-      } catch (e) { results.email.push({ name: m.name, status: 'failed', error: e.message }) }
+      } catch (e) {
+        console.error(`❌ Ticket email failed for ${m.email}:`, e.message)
+        results.email.push({ name: m.name, status: 'failed', error: e.message })
+      }
     }
+  } else {
+    console.error('❌ EMAIL_USER or EMAIL_PASS not set in environment')
   }
   res.json({ success: true, ticketId, qr: qrBase64, results })
 })
