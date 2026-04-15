@@ -209,14 +209,11 @@ async function sendWA(phone, message) {
 
 // ── Cloudinary signed upload ──────────────────────────────────
 app.get('/api/cloudinary-signature', (req, res) => {
-  const timestamp = Math.round(Date.now() / 1000)
-  const params = { folder: 'techverse_ppts', timestamp, resource_type: 'raw' }
-  const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET)
   res.json({
-    signature, timestamp,
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,
     folder: 'techverse_ppts',
+    uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || 'techverse_ppts',
   })
 })
 

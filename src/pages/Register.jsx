@@ -122,10 +122,11 @@ export default function Register() {
     // Upload PPT directly to Cloudinary (bypasses server body limit)
     if (pptFile) {
       try {
-        await uploadPptToCloudinary(pptFile, result.id)
+        const pptUrl = await uploadPptToCloudinary(pptFile, result.id)
+        console.log('✅ PPT uploaded:', pptUrl)
       } catch (err) {
-        console.error('PPT upload failed:', err.message)
-        // Registration still succeeds even if PPT upload fails
+        console.error('❌ PPT upload failed:', err.message)
+        alert(`PPT upload failed: ${err.message}. Your registration is saved but PPT was not uploaded.`)
       }
     }
 

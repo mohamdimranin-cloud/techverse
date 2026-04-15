@@ -141,17 +141,14 @@ export async function getWAQr(token) {
 
 // ── Direct Cloudinary upload ──────────────────────────────────
 export async function uploadPptToCloudinary(file, registrationId) {
-  // Get signature from server
+  // Get cloud name from server
   const sigRes = await fetch(`${BASE}/api/cloudinary-signature`)
-  const { signature, timestamp, cloudName, apiKey, folder } = await sigRes.json()
+  const { cloudName, apiKey, folder, uploadPreset } = await sigRes.json()
 
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('api_key', apiKey)
-  formData.append('timestamp', timestamp)
-  formData.append('signature', signature)
+  formData.append('upload_preset', uploadPreset || 'techverse_ppts')
   formData.append('folder', folder)
-  formData.append('resource_type', 'raw')
 
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
     method: 'POST',
