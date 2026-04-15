@@ -129,9 +129,35 @@ app.post('/api/checkin', requireAuth, async (req, res) => {
   const { ticketId } = req.body
   const { rows } = await pool.query(`SELECT * FROM registrations WHERE ticket_id=$1`, [ticketId])
   if (!rows[0]) return res.status(404).json({ success: false, error: 'Ticket not found' })
-  if (rows[0].checked_in) return res.status(409).json({ success: false, error: 'Already checked in', reg: rows[0] })
-  await pool.query(`UPDATE registrations SET checked_in=TRUE, checked_in_at=NOW() WHERE ticket_id=$1`, [ticketId])
-  res.json({ success: true, reg: rows[0] })
+
+  const reg = rows[0]
+  const count = reg.checkin_count || 0
+  const teamSize = reg.team_size
+
+  if (count >= teamSize) {
+    return res.status(409).json({
+      success: false,
+      error: `All ${teamSize} member(s) already checked in`,
+      reg,
+    })
+  }
+
+  const newCount = count + 1
+  const fullyCheckedIn = newCount >= teamSize
+
+  await pool.query(
+    `UPDATE registrations SET checkin_count=$1, checked_in=$2, checked_in_at=COALESCE(checked_in_at, NOW()) WHERE ticket_id=$3`,
+    [newCount, fullyCheckedIn, ticketId]
+  )
+
+  res.json({
+    success: true,
+    checkinCount: newCount,
+    teamSize,
+    remaining: teamSize - newCount,
+    fullyCheckedIn,
+    reg: { ...reg, checkin_count: newCount },
+  })
 })
 
 // ── Sponsors ──────────────────────────────────────────────────

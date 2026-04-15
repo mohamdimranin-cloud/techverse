@@ -20,10 +20,14 @@ async function initDB() {
       status TEXT DEFAULT 'pending',
       checked_in BOOLEAN DEFAULT FALSE,
       checked_in_at TIMESTAMPTZ,
+      checkin_count INT DEFAULT 0,
       ppt_name TEXT,
       ppt_size BIGINT,
       registered_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    -- Add checkin_count to existing tables if missing
+    ALTER TABLE registrations ADD COLUMN IF NOT EXISTS checkin_count INT DEFAULT 0;
 
     CREATE TABLE IF NOT EXISTS members (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

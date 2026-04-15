@@ -95,13 +95,28 @@ export default function AdminCheckin() {
 
           {result && (
             <div className={`${styles.result} ${result.success ? styles.success : styles.fail}`}>
-              <span className={styles.resultIcon}>{result.success ? '✅' : result.reg ? '⚠️' : '❌'}</span>
+              <span className={styles.resultIcon}>{result.success ? '✅' : result.error === 'Ticket not found' ? '❌' : '⛔'}</span>
               <div>
                 <p className={styles.resultTitle}>
-                  {result.success ? 'Entry Granted' : result.reg ? 'Already Checked In' : 'Invalid Ticket'}
+                  {result.success
+                    ? result.fullyCheckedIn
+                      ? 'All Members Checked In'
+                      : `Member ${result.checkinCount} of ${result.teamSize} Checked In`
+                    : result.error || 'Invalid Ticket'}
                 </p>
-                {result.reg && <p className={styles.resultTeam}>{result.reg.teamName}</p>}
-                {result.error && !result.reg && <p className={styles.resultErr}>{result.error}</p>}
+                {result.success && result.reg && (
+                  <p className={styles.resultTeam}>{result.reg.team_name}</p>
+                )}
+                {result.success && !result.fullyCheckedIn && (
+                  <p className={styles.resultErr} style={{ color: '#22d3ee' }}>
+                    {result.remaining} member(s) still to enter
+                  </p>
+                )}
+                {result.success && result.fullyCheckedIn && (
+                  <p className={styles.resultErr} style={{ color: '#f59e0b' }}>
+                    QR now expired — all members entered
+                  </p>
+                )}
                 {result.success && <p className={styles.resultTime}>✓ {new Date().toLocaleTimeString()}</p>}
               </div>
             </div>
@@ -144,7 +159,7 @@ export default function AdminCheckin() {
                 <th>Ticket ID</th>
                 <th>Domain</th>
                 <th>College</th>
-                <th>Members</th>
+                <th>Checked In</th>
                 <th>Checked In At</th>
               </tr>
             </thead>
@@ -156,7 +171,7 @@ export default function AdminCheckin() {
                   <td className={styles.ticketId}>{r.ticket_id}</td>
                   <td><span className={styles.domainTag}>{r.domain}</span></td>
                   <td className={styles.muted}>{r.college}</td>
-                  <td className={styles.center}>{r.team_size}</td>
+                  <td className={styles.center}>{r.checkin_count || 0}/{r.team_size}</td>
                   <td className={styles.muted}>{r.checked_in_at ? new Date(r.checked_in_at).toLocaleTimeString() : '—'}</td>
                 </tr>
               ))}
