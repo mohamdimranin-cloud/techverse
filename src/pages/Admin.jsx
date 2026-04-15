@@ -53,6 +53,7 @@ export default function Admin() {
       checkedIn: r.checked_in || r.checkedIn,
       checkedInAt: r.checked_in_at || r.checkedInAt,
       ppt: (r.ppt_name || r.ppt) ? { name: r.ppt_name || r.ppt?.name, size: r.ppt_size || r.ppt?.size } : null,
+      ppt_link: r.ppt_link || null,
     })))
   })
   const [waQr, setWaQr] = useState(null)
@@ -468,16 +469,22 @@ export default function Admin() {
                 <p>Transaction ID: <span style={{ color: 'var(--neon-cyan)', fontWeight: 600 }}>{selected.txnId || '—'}</span></p>
               </div>
 
-              {selected.ppt && (
+              {(selected.ppt || selected.ppt_link) && (
                 <div className={styles.detailSection}>
                   <h4>📊 Presentation</h4>
-                  <div className={styles.pptRow}>
-                    <div>
-                      <p className={styles.memberName}>{selected.ppt.name}</p>
-                      <p className={styles.memberContact}>{(selected.ppt.size / 1024 / 1024).toFixed(2)} MB</p>
+                  {selected.ppt_link ? (
+                    <a href={selected.ppt_link} target="_blank" rel="noopener noreferrer"
+                      style={{ color: 'var(--neon-cyan)', fontSize: '0.9rem', wordBreak: 'break-all' }}>
+                      🔗 View Presentation
+                    </a>
+                  ) : (
+                    <div className={styles.pptRow}>
+                      <div>
+                        <p className={styles.memberName}>{selected.ppt?.name || selected.ppt_name}</p>
+                      </div>
+                      <button className="btn btn-outline" onClick={() => downloadPpt(selected)}>⬇ Download</button>
                     </div>
-                    <button className="btn btn-outline" onClick={() => downloadPpt(selected)}>⬇ Download</button>
-                  </div>
+                  )}
                 </div>
               )}
 

@@ -107,11 +107,11 @@ export default function Register() {
     e.preventDefault()
     if (!validateStep()) return
 
-    // Register without PPT data (just metadata)
     const result = await submitRegistration({
       ...form,
       txnId,
-      ppt: pptFile ? { name: pptFile.name, size: pptFile.size } : null,
+      ppt: null,
+      pptLink: form.pptLink || null,
     })
 
     if (!result.id) {
@@ -119,18 +119,7 @@ export default function Register() {
       return
     }
 
-    // Upload PPT directly to Cloudinary (bypasses server body limit)
-    if (pptFile) {
-      try {
-        const pptUrl = await uploadPptToCloudinary(pptFile, result.id)
-        console.log('✅ PPT uploaded:', pptUrl)
-      } catch (err) {
-        console.error('❌ PPT upload failed:', err.message)
-        alert(`PPT upload failed: ${err.message}. Your registration is saved but PPT was not uploaded.`)
-      }
-    }
-
-    // Send WhatsApp confirmation (best effort)
+    // No PPT file upload needed - using Google Drive link
     notifyRegistration({ teamName: form.teamName, members: form.members, domain: form.domain, projectTitle: form.projectTitle, txnId })
 
     navigate('/register/success', { state: { teamName: form.teamName, id: result.id, ticketId: result.ticketId } })
@@ -263,27 +252,16 @@ export default function Register() {
                   {errors.projectDesc && <span className={styles.error}>{errors.projectDesc}</span>}
                 </div>
                 <div className={styles.field}>
-                  <label>Upload Presentation <span className={styles.hint}>(.ppt / .pptx, max 10MB — optional)</span></label>
-                  <label className={`${styles.uploadBox} ${pptFile ? styles.uploadDone : ''}`}>
-                    <input type="file" accept=".ppt,.pptx" onChange={handlePpt} style={{ display: 'none' }} />
-                    {pptFile ? (
-                      <div className={styles.uploadedFile}>
-                        <span>📊</span>
-                        <div>
-                          <p className={styles.fileName}>{pptFile.name}</p>
-                          <p className={styles.fileSize}>{(pptFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                        </div>
-                        <span className={styles.checkMark}>✓</span>
-                      </div>
-                    ) : (
-                      <div className={styles.uploadPrompt}>
-                        <span>📤</span>
-                        <p>Click to upload your presentation</p>
-                        <p className={styles.hint}>.ppt or .pptx only</p>
-                      </div>
-                    )}
-                  </label>
-                  {pptError && <span className={styles.error}>{pptError}</span>}
+                  <label>Presentation Link <span className={styles.hint}>(Google Drive / OneDrive shareable link — optional)</span></label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/file/d/..."
+                    value={form.pptLink || ''}
+                    onChange={e => set('pptLink', e.target.value)}
+                  />
+                  <span className={styles.hint} style={{ marginTop: '0.3rem' }}>
+                    Upload your PPT to Google Drive → Share → Anyone with link → Copy link
+                  </span>
                 </div>
                 <div className={styles.summary}>
                   <h3>Registration Summary</h3>
@@ -292,7 +270,7 @@ export default function Register() {
                     <span>Domain</span><span>{form.domain}</span>
                     <span>College</span><span>{form.college}</span>
                     <span>Members</span><span>{form.teamSize}</span>
-                    <span>PPT</span><span>{pptFile ? pptFile.name : 'Not uploaded'}</span>
+                    <span>PPT</span><span>{form.pptLink ? '🔗 Link provided' : 'Not provided'}</span>
                   </div>
                 </div>
                 <label className={styles.checkLabel}>

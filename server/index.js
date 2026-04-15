@@ -68,16 +68,16 @@ app.post('/api/login', async (req, res) => {
 
 // ── Registrations ─────────────────────────────────────────────
 app.post('/api/register', async (req, res) => {
-  const { teamName, domain, college, teamSize, members, projectTitle, projectDesc, txnId, ppt } = req.body
+  const { teamName, domain, college, teamSize, members, projectTitle, projectDesc, txnId, ppt, pptLink } = req.body
   const ticketId = `TV2026-${Math.random().toString(36).substring(2,7).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
     const { rows } = await client.query(
-      `INSERT INTO registrations (ticket_id, team_name, domain, college, team_size, project_title, project_desc, txn_id, ppt_name, ppt_size)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      `INSERT INTO registrations (ticket_id, team_name, domain, college, team_size, project_title, project_desc, txn_id, ppt_name, ppt_size, ppt_link)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
       [ticketId, teamName, domain, college, teamSize, projectTitle, projectDesc, txnId,
-       ppt?.name || null, ppt?.size || null]
+       ppt?.name || null, ppt?.size || null, pptLink || null]
     )
     const reg = rows[0]
     for (let i = 0; i < members.length; i++) {
