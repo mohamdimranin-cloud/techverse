@@ -90,6 +90,49 @@ app.post('/api/register', async (req, res) => {
     // PPT is now uploaded directly to Cloudinary from the browser
     // ppt_url will be updated separately via /api/registrations/:id/ppt-url
     await client.query('COMMIT')
+
+    // Send confirmation emails to all members
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+      })
+      const emailPromises = members.map(m => {
+        if (!m.email) return Promise.resolve()
+        return transporter.sendMail({
+          from: `TechVerse 2026 <${process.env.EMAIL_USER}>`,
+          to: m.email,
+          subject: `✅ Registration Received — TechVerse Hackathon 2026 | ${ticketId}`,
+          html: `
+            <div style="background:#020817;color:#e2e8f0;font-family:sans-serif;padding:32px;border-radius:16px;max-width:520px;margin:auto">
+              <h1 style="color:#a855f7;margin-bottom:4px">TechVerse Hackathon 2026</h1>
+              <p style="color:#94a3b8;margin-top:0">Bearys Institute of Technology, Mangalore</p>
+              <hr style="border-color:#1e293b;margin:20px 0"/>
+              <p>Hi <strong>${m.name}</strong>,</p>
+              <p>Your team <strong>${teamName}</strong> has been successfully registered! 🎉<br/>
+              Your payment is currently under verification. You'll receive your ticket once confirmed.</p>
+              <div style="background:#0a0f1e;border:1px solid #a855f7;border-radius:12px;padding:20px;margin:20px 0">
+                <p style="margin:0 0 8px;color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:1px">Ticket ID</p>
+                <p style="margin:0;color:#22d3ee;font-family:monospace;font-size:22px;font-weight:bold">${ticketId}</p>
+              </div>
+              <table style="width:100%;border-collapse:collapse;font-size:14px">
+                <tr><td style="padding:6px 0;color:#94a3b8">Domain</td><td style="padding:6px 0">${domain}</td></tr>
+                <tr><td style="padding:6px 0;color:#94a3b8">Project</td><td style="padding:6px 0">${projectTitle}</td></tr>
+                <tr><td style="padding:6px 0;color:#94a3b8">College</td><td style="padding:6px 0">${college}</td></tr>
+                <tr><td style="padding:6px 0;color:#94a3b8">Team Size</td><td style="padding:6px 0">${teamSize} members</td></tr>
+                <tr><td style="padding:6px 0;color:#94a3b8">Transaction ID</td><td style="padding:6px 0">${txnId || 'N/A'}</td></tr>
+                <tr><td style="padding:6px 0;color:#94a3b8">Date</td><td style="padding:6px 0">9 & 10 May 2026</td></tr>
+              </table>
+              <hr style="border-color:#1e293b;margin:20px 0"/>
+              <p style="font-size:13px;color:#94a3b8">For queries, reach us at <a href="mailto:techverse@bitmangalore.edu.in" style="color:#a855f7">techverse@bitmangalore.edu.in</a></p>
+              <p style="font-size:13px;color:#64748b">Team TechVerse ⚡</p>
+            </div>
+          `,
+        }).catch(err => console.error(`Email failed for ${m.email}:`, err.message))
+      })
+      await Promise.allSettled(emailPromises)
+    }
+
     res.json({ success: true, id: reg.id, ticketId })
   } catch (err) {
     await client.query('ROLLBACK')
