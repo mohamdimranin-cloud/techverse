@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx'
 import JSZip from 'jszip'
 import AdminSponsors from './AdminSponsors'
 import AdminCheckin from './AdminCheckin'
+import AdminPPT from './AdminPPT'
 import styles from './Admin.module.css'
 
 import { getToken } from '../api/client'
@@ -313,12 +314,15 @@ export default function Admin() {
             onClick={() => setActiveTab('registrations')}>📋 Registrations</button>
           <button className={`${styles.tab} ${activeTab === 'checkin' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('checkin')}>✅ Check-in</button>
+          <button className={`${styles.tab} ${activeTab === 'ppt' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('ppt')}>📊 PPT</button>
           <button className={`${styles.tab} ${activeTab === 'sponsors' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('sponsors')}>🤝 Sponsors</button>
         </div>
 
         {activeTab === 'sponsors' && <AdminSponsors />}
         {activeTab === 'checkin' && <AdminCheckin />}
+        {activeTab === 'ppt' && <AdminPPT />}
 
         {activeTab === 'registrations' && (<>
         {/* Stats */}
