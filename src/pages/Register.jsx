@@ -27,6 +27,7 @@ export default function Register() {
   const [errors, setErrors] = useState({})
   const [pptFile, setPptFile] = useState(null)
   const [pptError, setPptError] = useState('')
+  const [pptMode, setPptMode] = useState('upload') // 'upload' | 'link'
   const [txnId, setTxnId] = useState('')
 
   const [form, setForm] = useState({
@@ -68,7 +69,7 @@ export default function Register() {
       setPptFile(null); return
     }
     if (file.size > 10 * 1024 * 1024) {
-      setPptError('File size must be under 10MB (Cloudinary free plan limit)')
+      setPptError(`❌ File too large (${(file.size/1024/1024).toFixed(1)}MB). Maximum is 10MB. Please compress or use the link option.`)
       setPptFile(null); return
     }
     setPptFile(file)
@@ -110,13 +111,19 @@ export default function Register() {
     const result = await submitRegistration({
       ...form,
       txnId,
-      ppt: null,
+      ppt: pptFile ? { name: pptFile.name, size: pptFile.size } : null,
       pptLink: form.pptLink || null,
     })
 
-    if (!result.id) {
-      alert('Registration failed. Please try again.')
-      return
+    if (!result.id) { alert('Registration failed. Please try again.'); return }
+
+    // Upload PPT to Cloudinary if file selected
+    if (pptFile && pptMode === 'upload') {
+      try {
+        await uploadPptToCloudinary(pptFile, result.id)
+      } catch (err) {
+        console.error('PPT upload failed:', err.message)
+      }
     }
 
     // No PPT file upload needed - using Google Drive link
@@ -252,16 +259,60 @@ export default function Register() {
                   {errors.projectDesc && <span className={styles.error}>{errors.projectDesc}</span>}
                 </div>
                 <div className={styles.field}>
-                  <label>Presentation Link <span className={styles.hint}>(Google Drive / OneDrive shareable link — optional)</span></label>
-                  <input
-                    type="url"
-                    placeholder="https://drive.google.com/file/d/..."
-                    value={form.pptLink || ''}
-                    onChange={e => set('pptLink', e.target.value)}
-                  />
-                  <span className={styles.hint} style={{ marginTop: '0.3rem' }}>
-                    Upload your PPT to Google Drive → Share → Anyone with link → Copy link
-                  </span>
+                  <label>Presentation <span className={styles.hint}>(optional)</span></label>
+
+                  {/* Toggle */}
+                  <div className={styles.pptToggle}>
+                    <button type="button"
+                      className={`${styles.toggleBtn} ${pptMode === 'upload' ? styles.toggleActive : ''}`}
+                      onClick={() => { setPptMode('upload'); set('pptLink', ''); setPptError('') }}>
+                      📤 Upload File
+                    </button>
+                    <button type="button"
+                      className={`${styles.toggleBtn} ${pptMode === 'link' ? styles.toggleActive : ''}`}
+                      onClick={() => { setPptMode('link'); setPptFile(null); setPptError('') }}>
+                      🔗 Share Link
+                    </button>
+                  </div>
+
+                  {pptMode === 'upload' && (
+                    <>
+                      <p className={styles.pptNote}>⚠️ Max file size: <strong>10MB</strong>. Files above 10MB will be rejected.</p>
+                      <label className={`${styles.uploadBox} ${pptFile ? styles.uploadDone : ''}`}>
+                        <input type="file" accept=".ppt,.pptx" onChange={handlePpt} style={{ display: 'none' }} />
+                        {pptFile ? (
+                          <div className={styles.uploadedFile}>
+                            <span>📊</span>
+                            <div>
+                              <p className={styles.fileName}>{pptFile.name}</p>
+                              <p className={styles.fileSize}>{(pptFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
+                            <span className={styles.checkMark}>✓</span>
+                          </div>
+                        ) : (
+                          <div className={styles.uploadPrompt}>
+                            <span>📤</span>
+                            <p>Click to upload .ppt or .pptx</p>
+                            <p className={styles.hint}>Max 10MB</p>
+                          </div>
+                        )}
+                      </label>
+                    </>
+                  )}
+
+                  {pptMode === 'link' && (
+                    <>
+                      <p className={styles.pptNote}>📁 Upload to Google Drive → Share → Anyone with link → Paste below</p>
+                      <input
+                        type="url"
+                        placeholder="https://drive.google.com/file/d/..."
+                        value={form.pptLink || ''}
+                        onChange={e => set('pptLink', e.target.value)}
+                      />
+                    </>
+                  )}
+
+                  {pptError && <span className={styles.error}>{pptError}</span>}
                 </div>
                 <div className={styles.summary}>
                   <h3>Registration Summary</h3>
@@ -270,7 +321,7 @@ export default function Register() {
                     <span>Domain</span><span>{form.domain}</span>
                     <span>College</span><span>{form.college}</span>
                     <span>Members</span><span>{form.teamSize}</span>
-                    <span>PPT</span><span>{form.pptLink ? '🔗 Link provided' : 'Not provided'}</span>
+                    <span>PPT</span><span>{pptFile ? `📤 ${pptFile.name}` : form.pptLink ? '🔗 Link provided' : 'Not provided'}</span>
                   </div>
                 </div>
                 <label className={styles.checkLabel}>

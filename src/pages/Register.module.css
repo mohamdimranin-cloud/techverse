@@ -351,3 +351,22 @@
   padding: 0.6rem 1rem;
   width: 100%;
 }
+
+/* PPT toggle */
+.pptToggle { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.toggleBtn {
+  flex: 1; padding: 0.5rem 1rem; border-radius: 8px;
+  border: 1px solid var(--glass-border); background: var(--glass-bg);
+  color: var(--text-muted); cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 0.85rem; transition: all 0.2s;
+}
+.toggleBtn:hover { border-color: var(--neon-purple); color: var(--text); }
+.toggleActive {
+  background: rgba(168,85,247,0.15); border-color: var(--neon-purple);
+  color: var(--neon-purple); font-weight: 600;
+}
+.pptNote {
+  font-size: 0.78rem; color: #f59e0b;
+  background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 8px; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem;
+}
