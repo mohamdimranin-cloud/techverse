@@ -177,11 +177,24 @@ async function connectWhatsApp() {
     if (qr) { qrCodeData = qr; console.log('📱 QR ready — check /api/qr') }
     if (connection === 'close') {
       isConnected = false
-      const code = lastDisconnect?.error instanceof Boom ? lastDisconnect.error.output?.statusCode : 0
-      if (code !== DisconnectReason.loggedOut) {
-        retryCount++
-        setTimeout(connectWhatsApp, Math.min(1000 * Math.pow(2, retryCount), 30000))
+      const boom = lastDisconnect?.error instanceof Boom ? lastDisconnect.error : null
+      const code = boom?.output?.statusCode
+      const reason = boom?.output?.payload?.error || ''
+      console.log(`🔌 WA disconnected — code: ${code}, reason: ${reason}`)
+
+      if (code === DisconnectReason.loggedOut) {
+        console.log('🚪 Logged out — not reconnecting')
+        return
       }
+      // conflict = another instance is active, don't fight it
+      if (reason?.toLowerCase().includes('conflict') || code === 440) {
+        console.log('⚠️ Conflict detected (another instance active) — not reconnecting')
+        return
+      }
+      retryCount++
+      const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
+      console.log(`🔄 Reconnecting in ${delay}ms (attempt ${retryCount})`)
+      setTimeout(connectWhatsApp, delay)
     }
     if (connection === 'open') { isConnected = true; qrCodeData = null; retryCount = 0; console.log('✅ WhatsApp connected') }
   })
