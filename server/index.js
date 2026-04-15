@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const QRCode = require('qrcode')
+const { useDBAuthState } = require('./waAuthState')
 const { v2: cloudinary } = require('cloudinary')
 const { pool, initDB } = require('./db')
 const {
@@ -167,7 +168,7 @@ app.delete('/api/sponsors/:id', requireAuth, async (req, res) => {
 let sock = null, isConnected = false, qrCodeData = null, retryCount = 0
 
 async function connectWhatsApp() {
-  const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, 'auth_info'))
+  const { state, saveCreds } = await useDBAuthState()
   const { version } = await fetchLatestBaileysVersion()
   sock = makeWASocket({
     version, auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, console) },
@@ -290,3 +291,5 @@ const PORT = process.env.PORT || 3001
 initDB().then(() => {
   app.listen(PORT, () => console.log(`🚀 TechVerse API → http://localhost:${PORT}`))
 }).catch(err => { console.error('DB init failed:', err); process.exit(1) })
+
+// Cloudinary config (added after imports)
