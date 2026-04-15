@@ -87,18 +87,8 @@ app.post('/api/register', async (req, res) => {
         [reg.id, m.name, m.email, m.phone, m.role || '', i === 0]
       )
     }
-    // Upload PPT to Cloudinary if provided
-    if (ppt?.data) {
-      try {
-        const pptUrl = await uploadToCloudinary(ppt.data, `${ticketId}_${ppt.name}`)
-        await client.query(`UPDATE registrations SET ppt_url=$1 WHERE id=$2`, [pptUrl, reg.id])
-        console.log(`✅ PPT uploaded to Cloudinary: ${pptUrl}`)
-      } catch (err) {
-        console.error('❌ Cloudinary upload failed:', err.message, err)
-      }
-    } else {
-      console.log('ℹ️ No PPT data received for registration', ticketId)
-    }
+    // PPT is now uploaded directly to Cloudinary from the browser
+    // ppt_url will be updated separately via /api/registrations/:id/ppt-url
     await client.query('COMMIT')
     res.json({ success: true, id: reg.id, ticketId })
   } catch (err) {
@@ -216,6 +206,28 @@ async function sendWA(phone, message) {
   if (!p.startsWith('91')) p = '91' + p
   await sock.sendMessage(`${p}@s.whatsapp.net`, { text: message })
 }
+
+// ── Cloudinary signed upload ──────────────────────────────────
+app.get('/api/cloudinary-signature', (req, res) => {
+  const timestamp = Math.round(Date.now() / 1000)
+  const params = { folder: 'techverse_ppts', timestamp, resource_type: 'raw' }
+  const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET)
+  res.json({
+    signature, timestamp,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    folder: 'techverse_ppts',
+  })
+})
+
+app.patch('/api/registrations/:id/ppt-url', async (req, res) => {
+  const { pptUrl, pptName, pptSize } = req.body
+  await pool.query(
+    `UPDATE registrations SET ppt_url=$1, ppt_name=$2, ppt_size=$3 WHERE id=$4`,
+    [pptUrl, pptName, pptSize, req.params.id]
+  )
+  res.json({ success: true })
+})
 
 app.post('/api/notify-registration', async (req, res) => {
   const { teamName, members, domain, projectTitle, txnId } = req.body

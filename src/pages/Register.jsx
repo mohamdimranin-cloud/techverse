@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import { submitRegistration, notifyRegistration } from '../api/client'
+import { submitRegistration, notifyRegistration, uploadPptToCloudinary } from '../api/client'
 import styles from './Register.module.css'
 
 const DOMAINS = [
@@ -107,25 +107,26 @@ export default function Register() {
     e.preventDefault()
     if (!validateStep()) return
 
-    // Convert PPT to base64 if present
-    let pptData = null
-    if (pptFile) {
-      pptData = await new Promise((resolve) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve({ name: pptFile.name, size: pptFile.size, data: reader.result })
-        reader.readAsDataURL(pptFile)
-      })
-    }
-
+    // Register without PPT data (just metadata)
     const result = await submitRegistration({
       ...form,
       txnId,
-      ppt: pptData ? { name: pptData.name, size: pptData.size, data: pptData.data } : null,
+      ppt: pptFile ? { name: pptFile.name, size: pptFile.size } : null,
     })
 
     if (!result.id) {
       alert('Registration failed. Please try again.')
       return
+    }
+
+    // Upload PPT directly to Cloudinary (bypasses server body limit)
+    if (pptFile) {
+      try {
+        await uploadPptToCloudinary(pptFile, result.id)
+      } catch (err) {
+        console.error('PPT upload failed:', err.message)
+        // Registration still succeeds even if PPT upload fails
+      }
     }
 
     // Send WhatsApp confirmation (best effort)

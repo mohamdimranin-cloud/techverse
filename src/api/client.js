@@ -138,3 +138,34 @@ export async function getWAQr(token) {
   })
   return res.json()
 }
+
+// ── Direct Cloudinary upload ──────────────────────────────────
+export async function uploadPptToCloudinary(file, registrationId) {
+  // Get signature from server
+  const sigRes = await fetch(`${BASE}/api/cloudinary-signature`)
+  const { signature, timestamp, cloudName, apiKey, folder } = await sigRes.json()
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('api_key', apiKey)
+  formData.append('timestamp', timestamp)
+  formData.append('signature', signature)
+  formData.append('folder', folder)
+  formData.append('resource_type', 'raw')
+
+  const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
+    method: 'POST',
+    body: formData,
+  })
+  const uploadData = await uploadRes.json()
+  if (!uploadData.secure_url) throw new Error(uploadData.error?.message || 'Upload failed')
+
+  // Save URL to DB
+  await fetch(`${BASE}/api/registrations/${registrationId}/ppt-url`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pptUrl: uploadData.secure_url, pptName: file.name, pptSize: file.size }),
+  })
+
+  return uploadData.secure_url
+}
