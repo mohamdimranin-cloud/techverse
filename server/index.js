@@ -36,6 +36,7 @@ async function uploadToCloudinary(base64Data, filename) {
     public_id: filename.replace(/\.[^/.]+$/, ''),
     use_filename: true,
     overwrite: false,
+    access_mode: 'public',
   })
   return result.secure_url
 } // for base64 PPT/images

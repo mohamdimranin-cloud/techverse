@@ -203,16 +203,31 @@ export default function Admin() {
   }
 
   const downloadPpt = async (reg) => {
-    const data = await downloadPptAPI(reg.id)
-    if (!data) return alert('PPT not found.')
-    if (data.url) {
-      // Cloudinary URL — open directly
-      window.open(data.url, '_blank')
-    } else if (data.data) {
-      const a = document.createElement('a')
-      a.href = data.data
-      a.download = data.name
-      a.click()
+    try {
+      const data = await downloadPptAPI(reg.id)
+      if (!data) return alert('PPT not found.')
+      if (data.url) {
+        // Fetch the file and force download
+        const res = await fetch(data.url)
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = data.name || reg.ppt?.name || 'presentation.pptx'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      } else if (data.data) {
+        const a = document.createElement('a')
+        a.href = data.data
+        a.download = data.name
+        a.click()
+      } else {
+        alert('PPT not found.')
+      }
+    } catch (e) {
+      alert('Download failed: ' + e.message)
     }
   }
 
