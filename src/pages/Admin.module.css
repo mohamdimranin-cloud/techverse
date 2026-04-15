@@ -96,6 +96,8 @@
   padding: 2rem;
   border-color: rgba(168,85,247,0.3);
   box-shadow: 0 0 60px rgba(168,85,247,0.2);
+  background: #020817 !important;
+  backdrop-filter: none;
 }
 .detailModal::-webkit-scrollbar { display: none; }
 .detailGrid {
