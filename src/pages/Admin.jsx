@@ -299,11 +299,11 @@ export default function Admin() {
           <button className="btn btn-outline" onClick={exportExcel}>⬇ Export Excel</button>
           <button className="btn btn-outline" onClick={logout}>Logout</button>
           <span
-          style={{ fontSize: '0.8rem', color: waConnected ? '#10b981' : '#f87171', cursor: waQr ? 'pointer' : 'default' }}
-          onClick={() => waQr && setShowQr(true)}
-          title={waQr ? 'Click to scan QR code' : ''}
+          style={{ fontSize: '0.8rem', color: waConnected ? '#10b981' : '#f87171', cursor: 'pointer' }}
+          onClick={() => setShowQr(true)}
+          title={waConnected ? 'WhatsApp Connected' : 'Click to connect or reset WhatsApp'}
         >
-          {waConnected ? '🟢 WhatsApp Connected' : waQr ? '🟡 Scan QR to Connect ↗' : '🔴 WhatsApp Offline'}
+          {waConnected ? '🟢 WhatsApp Connected' : waQr ? '🟡 Scan QR to Connect ↗' : '🔴 WhatsApp Offline (click to fix)'}
         </span>
         </div>
       </div>
@@ -514,16 +514,40 @@ export default function Admin() {
       )}
 
       {/* WhatsApp QR Modal */}
-      {showQr && waQr && (
+      {showQr && (
         <div className={styles.modalOverlay} onClick={() => setShowQr(false)}>
           <div className={`glass-card ${styles.modal}`} onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
             <h3 style={{ marginBottom: '0.5rem' }}>📱 Connect WhatsApp</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-              Open WhatsApp → Linked Devices → Link a Device → Scan this QR
-            </p>
-            <img src={waQr} alt="WhatsApp QR" style={{ width: 220, height: 220, borderRadius: 12 }} />
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.75rem' }}>QR refreshes automatically</p>
-            <button className="btn btn-outline" style={{ marginTop: '1rem' }} onClick={() => setShowQr(false)}>Close</button>
+            {waQr ? (
+              <>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                  Open WhatsApp → Linked Devices → Link a Device → Scan this QR
+                </p>
+                <img src={waQr} alt="WhatsApp QR" style={{ width: 220, height: 220, borderRadius: 12 }} />
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '0.75rem' }}>QR refreshes automatically</p>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '1rem 0' }}>
+                {waConnected ? '✅ WhatsApp is connected.' : '⏳ Waiting for QR... If stuck, click Reset Session below.'}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1rem' }}>
+              <button className="btn btn-outline" onClick={() => setShowQr(false)}>Close</button>
+              {!waConnected && (
+                <button className="btn btn-primary" onClick={async () => {
+                  try {
+                    await fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/wa-reset`, {
+                      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }
+                    })
+                    setWaQr(null)
+                    setTimeout(async () => {
+                      const s = await getWAStatus()
+                      if (s.hasQr) { const q = await getWAQr(getToken()); if (q.qr) setWaQr(q.qr) }
+                    }, 4000)
+                  } catch {}
+                }}>🔄 Reset Session</button>
+              )}
+            </div>
           </div>
         </div>
       )}

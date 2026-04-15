@@ -164,6 +164,11 @@ app.delete('/api/sponsors/:id', requireAuth, async (req, res) => {
 // ── WhatsApp ──────────────────────────────────────────────────
 let sock = null, isConnected = false, qrCodeData = null, retryCount = 0
 
+async function clearWASession() {
+  await pool.query('DELETE FROM whatsapp_session')
+  console.log('🗑️ WA session cleared from DB')
+}
+
 async function connectWhatsApp() {
   const { state, saveCreds } = await useDBAuthState()
   const { version } = await fetchLatestBaileysVersion()
@@ -183,7 +188,10 @@ async function connectWhatsApp() {
       console.log(`🔌 WA disconnected — code: ${code}, reason: ${reason}`)
 
       if (code === DisconnectReason.loggedOut) {
-        console.log('🚪 Logged out — not reconnecting')
+        console.log('🚪 Logged out — clearing session and reconnecting for fresh QR')
+        await clearWASession()
+        retryCount = 0
+        setTimeout(connectWhatsApp, 2000)
         return
       }
       // conflict = another instance is active, don't fight it
@@ -208,6 +216,21 @@ app.get('/api/qr', requireAuth, async (req, res) => {
   if (!qrCodeData) return res.status(404).json({ error: 'No QR yet' })
   const dataUrl = await QRCode.toDataURL(qrCodeData, { width: 300, margin: 2 })
   res.json({ qr: dataUrl })
+})
+
+// Force clear session and get a fresh QR
+app.post('/api/wa-reset', requireAuth, async (req, res) => {
+  try {
+    isConnected = false
+    qrCodeData = null
+    retryCount = 0
+    if (sock) { try { sock.end() } catch {} }
+    await clearWASession()
+    setTimeout(connectWhatsApp, 1000)
+    res.json({ success: true, message: 'Session cleared — new QR will be ready in a few seconds' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
 async function sendWA(phone, message) {
