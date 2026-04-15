@@ -20,13 +20,18 @@ const path = require('path')
 
 const app = express()
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' }))
-app.use(express.json({ limit: '50mb' }))
+app.use(express.json({ limit: '100mb' }))
 
 // Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+})
+console.log('Cloudinary config:', {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY ? '✅ set' : '❌ missing',
+  api_secret: process.env.CLOUDINARY_API_SECRET ? '✅ set' : '❌ missing',
 })
 
 async function uploadToCloudinary(base64Data, filename) {
@@ -87,9 +92,12 @@ app.post('/api/register', async (req, res) => {
       try {
         const pptUrl = await uploadToCloudinary(ppt.data, `${ticketId}_${ppt.name}`)
         await client.query(`UPDATE registrations SET ppt_url=$1 WHERE id=$2`, [pptUrl, reg.id])
+        console.log(`✅ PPT uploaded to Cloudinary: ${pptUrl}`)
       } catch (err) {
-        console.error('Cloudinary upload failed:', err.message)
+        console.error('❌ Cloudinary upload failed:', err.message, err)
       }
+    } else {
+      console.log('ℹ️ No PPT data received for registration', ticketId)
     }
     await client.query('COMMIT')
     res.json({ success: true, id: reg.id, ticketId })
