@@ -3,20 +3,17 @@ const express = require('express')
 const cors = require('cors')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const nodemailer = require('nodemailer')
 const QRCode = require('qrcode')
 const { useDBAuthState } = require('./waAuthState')
 const { v2: cloudinary } = require('cloudinary')
 const { pool, initDB } = require('./db')
 const {
   default: makeWASocket,
-  useMultiFileAuthState,
   DisconnectReason,
   makeCacheableSignalKeyStore,
   fetchLatestBaileysVersion,
 } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
-const path = require('path')
 
 const app = express()
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' }))
@@ -110,72 +107,6 @@ app.get('/api/registrations', requireAuth, async (req, res) => {
 app.patch('/api/registrations/:id/status', requireAuth, async (req, res) => {
   const { status } = req.body
   await pool.query(`UPDATE registrations SET status=$1 WHERE id=$2`, [status, req.params.id])
-
-  // Send shortlist email to all members
-  if (status === 'shortlisted' && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    console.log(`📧 [patch-status] Shortlisted — fetching reg data for id=${req.params.id}`)
-    const { rows } = await pool.query(`
-      SELECT r.team_name, r.domain, r.project_title, r.college, r.team_size, r.ticket_id,
-             json_agg(json_build_object('name', m.name, 'email', m.email)) AS members
-      FROM registrations r
-      LEFT JOIN members m ON m.registration_id = r.id
-      WHERE r.id = $1
-      GROUP BY r.id
-    `, [req.params.id])
-    const reg = rows[0]
-    if (reg) {
-      console.log(`📧 [patch-status] Sending shortlist emails for team: ${reg.team_name} | members: ${reg.members.length}`)
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-      })
-      try {
-        await transporter.verify()
-        console.log(`✅ [patch-status] Gmail transporter verified`)
-      } catch (verifyErr) {
-        console.error(`❌ [patch-status] Gmail verify FAILED:`, verifyErr.message)
-      }
-      const emailPromises = reg.members.map(m => {
-        if (!m.email) { console.warn(`⚠️ [patch-status] No email for ${m.name}`); return Promise.resolve() }
-        console.log(`📤 [patch-status] Sending shortlist email to ${m.email}...`)
-        return transporter.sendMail({
-          from: `TechVerse 2026 <${process.env.EMAIL_USER}>`,
-          to: m.email,
-          subject: `🎉 You're Shortlisted! — TechVerse Hackathon 2026 | ${reg.ticket_id}`,
-          html: `
-            <div style="background:#020817;color:#e2e8f0;font-family:sans-serif;padding:32px;border-radius:16px;max-width:520px;margin:auto">
-              <h1 style="color:#a855f7;margin-bottom:4px">TechVerse Hackathon 2026</h1>
-              <p style="color:#94a3b8;margin-top:0">Bearys Institute of Technology, Mangalore</p>
-              <hr style="border-color:#1e293b;margin:20px 0"/>
-              <p>Hi <strong>${m.name}</strong>,</p>
-              <p>🎉 Congratulations! Your team <strong>${reg.team_name}</strong> has been <strong style="color:#a855f7">shortlisted</strong> for TechVerse Hackathon 2026!</p>
-              <div style="background:#0a0f1e;border:1px solid #a855f7;border-radius:12px;padding:20px;margin:20px 0">
-                <p style="margin:0 0 8px;color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:1px">Ticket ID</p>
-                <p style="margin:0;color:#22d3ee;font-family:monospace;font-size:22px;font-weight:bold">${reg.ticket_id}</p>
-              </div>
-              <table style="width:100%;border-collapse:collapse;font-size:14px">
-                <tr><td style="padding:6px 0;color:#94a3b8">Domain</td><td style="padding:6px 0">${reg.domain}</td></tr>
-                <tr><td style="padding:6px 0;color:#94a3b8">Project</td><td style="padding:6px 0">${reg.project_title}</td></tr>
-                <tr><td style="padding:6px 0;color:#94a3b8">College</td><td style="padding:6px 0">${reg.college}</td></tr>
-                <tr><td style="padding:6px 0;color:#94a3b8">Date</td><td style="padding:6px 0">9 & 10 May 2026</td></tr>
-                <tr><td style="padding:6px 0;color:#94a3b8">Venue</td><td style="padding:6px 0">Bearys Institute of Technology, Mangalore</td></tr>
-              </table>
-              <hr style="border-color:#1e293b;margin:20px 0"/>
-              <p style="font-size:13px;color:#94a3b8">For queries, reach us at <a href="mailto:techverse@bitmangalore.edu.in" style="color:#a855f7">techverse@bitmangalore.edu.in</a></p>
-              <p style="font-size:13px;color:#64748b">Team TechVerse ⚡</p>
-            </div>
-          `,
-        }).then(info => console.log(`✅ [patch-status] Shortlist email sent to ${m.email} | messageId: ${info.messageId}`))
-          .catch(err => console.error(`❌ [patch-status] Shortlist email FAILED for ${m.email}:`, err.message, err.code || ''))
-      })
-      await Promise.allSettled(emailPromises)
-    } else {
-      console.error(`❌ [patch-status] No registration found for id=${req.params.id}`)
-    }
-  } else if (status === 'shortlisted') {
-    console.error(`❌ [patch-status] Shortlisted but email env vars missing. EMAIL_USER=${process.env.EMAIL_USER || 'NOT SET'} EMAIL_PASS=${process.env.EMAIL_PASS ? 'set' : 'NOT SET'}`)
-  }
-
   res.json({ success: true })
 })
 
@@ -310,7 +241,7 @@ app.post('/api/send-ticket', async (req, res) => {
   const qrBase64 = await QRCode.toDataURL(qrData, { width: 400, margin: 2, color: { dark: '#ffffff', light: '#020817' } })
   const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64')
   const msg = `🎟️ *Your TechVerse 2026 Ticket*\n\nTeam: *${teamName}*\nTicket ID: \`${ticketId}\`\nDomain: ${domain}\nProject: ${projectTitle}\n\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\n*Show this QR code at the entry gate.*\n\n_Do not share your ticket._\n\n*Team TechVerse* ⚡`
-  const results = { whatsapp: [], email: [] }
+  const results = { whatsapp: [] }
   if (isConnected && sock) {
     for (const m of members) {
       let p = m.phone.replace(/\D/g, '')
@@ -326,37 +257,6 @@ app.post('/api/send-ticket', async (req, res) => {
   } else {
     console.log('⚠️ WhatsApp not connected, skipping WA ticket send')
     members.forEach(m => results.whatsapp.push({ name: m.name, status: 'skipped' }))
-  }
-  // Email
-  console.log(`📧 [send-ticket] EMAIL_USER=${process.env.EMAIL_USER || 'NOT SET'} | EMAIL_PASS=${process.env.EMAIL_PASS ? '✅ set' : '❌ NOT SET'}`)
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-    console.log(`📧 [send-ticket] Creating Gmail transporter...`)
-    const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } })
-    try {
-      await transporter.verify()
-      console.log(`✅ [send-ticket] Gmail transporter verified successfully`)
-    } catch (verifyErr) {
-      console.error(`❌ [send-ticket] Gmail transporter verify FAILED:`, verifyErr.message)
-    }
-    for (const m of members) {
-      if (!m.email) { console.warn(`⚠️ [send-ticket] No email address for member: ${m.name}`); continue }
-      console.log(`📤 [send-ticket] Sending ticket email to ${m.email} (${m.name})...`)
-      try {
-        const info = await transporter.sendMail({
-          from: `TechVerse 2026 <${process.env.EMAIL_USER}>`, to: m.email,
-          subject: `🎟️ Your TechVerse 2026 Ticket — ${ticketId}`,
-          html: `<div style="background:#020817;color:#e2e8f0;font-family:sans-serif;padding:32px;border-radius:16px;max-width:500px;margin:auto"><h1 style="color:#a855f7">🎟️ TechVerse Hackathon 2026</h1><p>Hi <strong>${m.name}</strong>, you're shortlisted!</p><div style="background:#0a0f1e;border:1px solid #a855f7;border-radius:12px;padding:20px;margin:20px 0;text-align:center"><p style="color:#94a3b8;font-size:12px">TICKET ID</p><p style="color:#22d3ee;font-family:monospace;font-size:20px;font-weight:bold">${ticketId}</p><img src="cid:qrcode" style="width:200px;height:200px;border-radius:8px;margin-top:12px"/></div><p><strong>Team:</strong> ${teamName} | <strong>Domain:</strong> ${domain}</p><p><strong>Date:</strong> 9 & 10 May 2026 | <strong>Venue:</strong> Bearys Institute of Technology</p></div>`,
-          attachments: [{ filename: `ticket-${ticketId}.png`, content: qrBuffer, cid: 'qrcode' }],
-        })
-        console.log(`✅ [send-ticket] Email sent to ${m.email} | messageId: ${info.messageId}`)
-        results.email.push({ name: m.name, status: 'sent' })
-      } catch (e) {
-        console.error(`❌ [send-ticket] Email FAILED for ${m.email}:`, e.message, e.code || '')
-        results.email.push({ name: m.name, status: 'failed', error: e.message })
-      }
-    }
-  } else {
-    console.error(`❌ [send-ticket] Skipping email — missing env vars. EMAIL_USER=${process.env.EMAIL_USER || 'NOT SET'} EMAIL_PASS=${process.env.EMAIL_PASS ? 'set' : 'NOT SET'}`)
   }
   res.json({ success: true, ticketId, qr: qrBase64, results })
 })
