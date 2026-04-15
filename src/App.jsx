@@ -2,7 +2,6 @@ import { useState, Suspense, lazy } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import StarField from './components/StarField'
-import CursorGlow from './components/CursorGlow'
 import SolarSystem from './components/SolarSystem'
 import IntroLoader from './components/IntroLoader'
 import Home from './pages/Home'
@@ -22,7 +21,6 @@ export default function App() {
     <>
       <StarField />
       <SolarSystem />
-      <CursorGlow />
       <Suspense fallback={null}><CosmonautFlying /></Suspense>
       {intro && <IntroLoader onDone={() => setIntro(false)} />}
       <Routes>
