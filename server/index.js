@@ -280,7 +280,7 @@ app.patch('/api/registrations/:id/ppt-url', async (req, res) => {
 
 app.post('/api/notify-registration', async (req, res) => {
   const { teamName, members, domain, projectTitle, txnId } = req.body
-  if (!isConnected) return res.status(503).json({ error: 'WhatsApp not connected' })
+  if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
   const msg = `✅ *Registration Confirmed!*\n\nHey Team *${teamName}*, your registration for *TechVerse Hackathon 2026* is complete! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n💳 *Transaction ID:* ${txnId || 'N/A'}\n\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\nThank you for registering. Your payment is under verification. Confirmation will be shared once complete.\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`
   const results = []
   for (const m of members) {
@@ -331,7 +331,7 @@ app.post('/api/send-ticket', async (req, res) => {
 
 app.post('/api/notify-status', requireAuth, async (req, res) => {
   const { teamName, members, domain, projectTitle, status } = req.body
-  if (!isConnected) return res.status(503).json({ error: 'WhatsApp not connected' })
+  if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
   const msgs = {
     'pending': `⏳ *Team ${teamName}* — Your registration is under review. Stay tuned!\n\n*Team TechVerse* ⚡`,
     'payment pending': `💳 *Team ${teamName}* — Your payment is pending. Please complete it to confirm your spot.\n\n📌 ${domain} | 💡 ${projectTitle}\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
