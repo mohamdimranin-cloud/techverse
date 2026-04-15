@@ -22,12 +22,23 @@ export default function AdminCheckin() {
     return !q || (r.team_name||'').toLowerCase().includes(q) || (r.ticket_id||'').toLowerCase().includes(q) || (r.college||'').toLowerCase().includes(q)
   })
 
+  const processingRef = useRef(false)
+
   const handleScan = async (text) => {
+    if (processingRef.current) return  // debounce duplicate scans
+    processingRef.current = true
+
     const id = text.replace('TECHVERSE2026:', '').trim()
     const outcome = await checkInTicket(id)
     setResult(outcome)
     reload()
-    stopScanner()
+
+    // Only stop scanner when all members are in, or on hard error
+    if (outcome.fullyCheckedIn || !outcome.success) {
+      stopScanner()
+    }
+    // brief cooldown before allowing next scan
+    setTimeout(() => { processingRef.current = false }, 2000)
   }
 
   const startScanner = async () => {
