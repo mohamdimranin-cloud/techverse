@@ -205,9 +205,11 @@ export default function Admin() {
   const downloadPpt = async (reg) => {
     try {
       const data = await downloadPptAPI(reg.id)
-      if (!data) return alert('PPT not found.')
+      if (!data || (!data.url && !data.data)) {
+        alert('No PPT uploaded for this team.')
+        return
+      }
       if (data.url) {
-        // Fetch the file and force download
         const res = await fetch(data.url)
         const blob = await res.blob()
         const url = URL.createObjectURL(blob)
@@ -223,8 +225,6 @@ export default function Admin() {
         a.href = data.data
         a.download = data.name
         a.click()
-      } else {
-        alert('PPT not found.')
       }
     } catch (e) {
       alert('Download failed: ' + e.message)
