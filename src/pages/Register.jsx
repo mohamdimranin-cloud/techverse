@@ -67,8 +67,8 @@ export default function Register() {
       setPptError('Only .ppt or .pptx files are allowed')
       setPptFile(null); return
     }
-    if (file.size > 20 * 1024 * 1024) {
-      setPptError('File size must be under 20MB')
+    if (file.size > 10 * 1024 * 1024) {
+      setPptError('File size must be under 10MB (Cloudinary free plan limit)')
       setPptFile(null); return
     }
     setPptFile(file)
@@ -263,7 +263,7 @@ export default function Register() {
                   {errors.projectDesc && <span className={styles.error}>{errors.projectDesc}</span>}
                 </div>
                 <div className={styles.field}>
-                  <label>Upload Presentation <span className={styles.hint}>(.ppt / .pptx, max 20MB — optional)</span></label>
+                  <label>Upload Presentation <span className={styles.hint}>(.ppt / .pptx, max 10MB — optional)</span></label>
                   <label className={`${styles.uploadBox} ${pptFile ? styles.uploadDone : ''}`}>
                     <input type="file" accept=".ppt,.pptx" onChange={handlePpt} style={{ display: 'none' }} />
                     {pptFile ? (

@@ -149,6 +149,7 @@ export async function uploadPptToCloudinary(file, registrationId) {
   formData.append('file', file)
   formData.append('upload_preset', uploadPreset || 'techverse_ppts')
   formData.append('folder', folder)
+  formData.append('resource_type', 'raw')
 
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
     method: 'POST',
