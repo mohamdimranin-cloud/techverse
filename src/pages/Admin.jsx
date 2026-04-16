@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import emailjs from '@emailjs/browser'
 import { fetchRegistrations, updateRegistrationStatus, deleteRegistrationAPI, downloadPptAPI, sendTicket, notifyStatus, sendPaymentRequest, getWAStatus, getWAQr, login as apiLogin } from '../api/client'
 import * as XLSX from 'xlsx'
 import JSZip from 'jszip'
@@ -105,6 +106,34 @@ export default function Admin() {
     setConfirmStatus({ id, status, reg })
   }
 
+  const sendShortlistEmails = async (reg) => {
+    const members = reg.members || []
+    const results = []
+    for (const m of members) {
+      if (!m.email) continue
+      try {
+        await emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID,
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+          {
+            to_email: m.email,
+            member_name: m.name,
+            team_name: reg.team_name || reg.teamName,
+            ticket_id: reg.ticket_id || reg.ticketId,
+            domain: reg.domain,
+            project_title: reg.project_title || reg.projectTitle,
+          },
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+        )
+        results.push({ name: m.name, status: 'sent' })
+      } catch (e) {
+        console.error(`Email failed for ${m.email}:`, e)
+        results.push({ name: m.name, status: 'failed' })
+      }
+    }
+    return results
+  }
+
   const handleStatus = async () => {
     if (!confirmStatus) return
     const { id, status, reg } = confirmStatus
@@ -124,7 +153,10 @@ export default function Admin() {
             projectTitle: reg.project_title || reg.projectTitle,
             ticketId: reg.ticket_id || reg.ticketId,
           })
-          showToast('✅ Shortlisted! QR ticket sent via WhatsApp & Email', 'success')
+          // Send shortlist email via EmailJS
+          const emailResults = await sendShortlistEmails(reg)
+          const sent = emailResults.filter(r => r.status === 'sent').length
+          showToast(`Shortlisted! WA ticket sent. Emails sent to ${sent} member(s)`, 'success')
         } else {
           const data = await notifyStatus({
             teamName: reg.team_name || reg.teamName,
