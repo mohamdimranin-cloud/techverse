@@ -330,7 +330,7 @@ app.post('/api/notify-status', requireAuth, async (req, res) => {
     'pending': `⏳ *Team ${teamName}* — Your registration is under review. Stay tuned!\n\n*Team TechVerse* ⚡`,
     'payment pending': `💳 *Team ${teamName}* — Your payment is pending. Please complete it to confirm your spot.\n\n📌 ${domain} | 💡 ${projectTitle}\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
     'payment successful': `✅ *Team ${teamName}* — Payment confirmed! Registration complete.\n\n📌 ${domain} | 💡 ${projectTitle}\n\n*Team TechVerse* ⚡`,
-    'shortlisted': `🎉 *Congratulations, Team ${teamName}!*\n\nYou've been *SHORTLISTED* for TechVerse 2026! 🚀\n\n📌 ${domain} | 💡 ${projectTitle}\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology\n\n*Team TechVerse* ⚡`,
+    'shortlisted': `🎉 *Congratulations, Team ${teamName}!*\n\nYou've been *SHORTLISTED* for TechVerse Hackathon 2026! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\n━━━━━━━━━━━━━━━━━━\n💳 *Round 2 Payment Required*\n\nTo confirm your participation, please complete the Round 2 fee:\n\n*Amount:* ₹499 (per team)\n*UPI ID:* 7760543128@ibl\n\nPay and send the transaction ID to this number to confirm your slot.\n━━━━━━━━━━━━━━━━━━\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
     'rejected': `😔 *Team ${teamName}* — Unfortunately your application was not selected this time. Thank you for participating!\n\n*Team TechVerse* ⚡`,
   }
   const message = msgs[status] || `📢 *Team ${teamName}* — Status updated to *${status}*.\n\n*Team TechVerse* ⚡`
