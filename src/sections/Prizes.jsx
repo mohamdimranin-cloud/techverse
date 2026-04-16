@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './Prizes.module.css'
 
 const perks = [
-  { icon: '💰', label: 'Cash Prizes' },
-  { icon: '🏅', label: 'Certificates' },
-  { icon: '🏢', label: 'Incubation Facilities' },
-  { icon: '🤝', label: 'Mentorship' },
-  { icon: '📈', label: 'Grants & Investments' },
+  { label: 'Cash Prizes' },
+  { label: 'Certificates' },
+  { label: 'Incubation Facilities' },
+  { label: 'Mentorship' },
+  { label: 'Grants & Investments' },
 ]
 
 function useCountUp(target, duration = 2200) {
@@ -68,7 +68,7 @@ export default function Prizes() {
         <div className={styles.perksGrid}>
           {perks.map(p => (
             <div key={p.label} className={`glass-card ${styles.perkCard}`}>
-              <span>{p.icon}</span>
+              <span className={styles.star}>★</span>
               <p>{p.label}</p>
             </div>
           ))}

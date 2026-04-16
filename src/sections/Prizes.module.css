@@ -58,6 +58,7 @@
   padding: 1rem 1.2rem;
 }
 .perkCard span { font-size: 1.5rem; flex-shrink: 0; }
+.star { color: var(--neon-purple); font-size: 1.2rem; flex-shrink: 0; }
 .perkCard p { font-size: 0.88rem; color: var(--text-muted); }
 
 .cta { text-align: center; }
