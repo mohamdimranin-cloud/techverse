@@ -334,7 +334,7 @@ app.post('/api/send-payment-request', requireAuth, async (req, res) => {
   const qrBase64 = await QRCode.toDataURL(qrData, { width: 400, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
   const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64')
 
-  const msg = `🎉 *Congratulations!*\n\nYour team *${teamName}* has been shortlisted for the next round.\n\nTo proceed, please complete the Round 2 payment of *₹499* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
+  const msg = `🎉 *Congratulations!*\n\nYour team *${teamName}* has been shortlisted for the next round.\n\nTo proceed, please complete the Round 2 payment of *₹499* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nPlease send your successful payment screenshot to this number.\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
 
   const results = []
   for (const m of members) {
