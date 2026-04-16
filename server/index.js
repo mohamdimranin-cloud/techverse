@@ -16,7 +16,17 @@ const {
 const { Boom } = require('@hapi/boom')
 
 const app = express()
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' }))
+app.use(cors({
+  origin: (origin, cb) => {
+    const allowed = (process.env.FRONTEND_URL || '').split(',').map(s => s.trim()).filter(Boolean)
+    if (!origin || allowed.length === 0 || allowed.includes('*') || allowed.includes(origin)) {
+      cb(null, true)
+    } else {
+      cb(new Error(`CORS blocked: ${origin}`))
+    }
+  },
+  credentials: true,
+}))
 app.use(express.json({ limit: '100mb' }))
 
 // Cloudinary config
