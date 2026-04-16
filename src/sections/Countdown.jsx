@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Countdown.module.css'
 
-const DEADLINE = new Date('2026-04-25T23:59:59')
+const DEADLINE = new Date('2026-04-29T23:59:59')
 
 function getTimeLeft() {
   const diff = DEADLINE - new Date()
@@ -37,13 +37,13 @@ export default function Countdown() {
                 </div>
               ))}
             </div>
-            <p className={styles.date}>Deadline: 25 April 2026</p>
+            <p className={styles.date}>Deadline: 29 April 2026</p>
             <Link to="/register" className="btn btn-primary">Register Before It's Too Late</Link>
           </>
         ) : (
           <>
             <p className={styles.label}>Registration Closed</p>
-            <p className={styles.date}>Registration ended on 25 April 2026</p>
+            <p className={styles.date}>Registration ended on 29 April 2026</p>
           </>
         )}
       </div>
