@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './Prizes.module.css'
 
 const perks = [
-  { icon: '', label: 'Cash Prizes' },
-  { icon: '', label: 'Certificates' },
-  { icon: '', label: 'Incubation Facilities' },
-  { icon: '', label: 'Mentorship' },
-  { icon: '', label: 'Grants & Investments' },
+  { icon: '💰', label: 'Cash Prizes' },
+  { icon: '🏅', label: 'Certificates' },
+  { icon: '🏢', label: 'Incubation Facilities' },
+  { icon: '🤝', label: 'Mentorship' },
+  { icon: '📈', label: 'Grants & Investments' },
 ]
 
 function useCountUp(target, duration = 2200) {
