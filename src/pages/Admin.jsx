@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { fetchRegistrations, updateRegistrationStatus, deleteRegistrationAPI, downloadPptAPI, sendTicket, notifyStatus, getWAStatus, getWAQr, login as apiLogin } from '../api/client'
+import { fetchRegistrations, updateRegistrationStatus, deleteRegistrationAPI, downloadPptAPI, sendTicket, notifyStatus, sendPaymentRequest, getWAStatus, getWAQr, login as apiLogin } from '../api/client'
 import * as XLSX from 'xlsx'
 import JSZip from 'jszip'
 import AdminSponsors from './AdminSponsors'
@@ -490,6 +490,21 @@ export default function Admin() {
 
               <div className={styles.detailSection}>
                 <h4>🔖 Update Status</h4>
+                <button
+                  className="btn btn-primary"
+                  style={{ marginBottom: '0.75rem', width: '100%', background: 'rgba(168,85,247,0.15)', borderColor: '#a855f7', color: '#a855f7' }}
+                  onClick={async () => {
+                    try {
+                      const data = await sendPaymentRequest({
+                        teamName: selected.teamName,
+                        members: selected.members,
+                      })
+                      if (data.success) showToast(`Payment request sent to ${data.results.filter(r => r.status === 'sent').length} member(s)`, 'success')
+                      else showToast(`⚠️ ${data.error}`, 'warn')
+                    } catch { showToast('⚠️ WhatsApp server unreachable', 'warn') }
+                  }}>
+                  Send Payment Request (₹499)
+                </button>
                 <div className={styles.statusBtns}>
                   {['pending', 'payment pending', 'payment successful', 'shortlisted', 'rejected'].map(s => (
                     <button key={s}

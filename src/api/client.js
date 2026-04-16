@@ -118,6 +118,15 @@ export async function sendTicket(data) {
   return res.json()
 }
 
+export async function sendPaymentRequest(data) {
+  const res = await fetch(`${BASE}/api/send-payment-request`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  })
+  return res.json()
+}
+
 export async function notifyStatus(data) {
   const res = await fetch(`${BASE}/api/notify-status`, {
     method: 'POST',

@@ -323,7 +323,35 @@ app.post('/api/send-ticket', async (req, res) => {
   res.json({ success: true, ticketId, qr: qrBase64, results })
 })
 
-app.post('/api/notify-status', requireAuth, async (req, res) => {
+app.post('/api/send-payment-request', requireAuth, async (req, res) => {
+  const { teamName, members } = req.body
+  if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
+
+  const UPI_ID = '7760543128@ibl'
+  const amount = 499
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Round%202`
+  const qrData = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Round%202`
+  const qrBase64 = await QRCode.toDataURL(qrData, { width: 400, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+  const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64')
+
+  const msg = `🎉 *Congratulations!*\n\nYour team *${teamName}* has been shortlisted for the next round.\n\nTo proceed, please complete the Round 2 payment of *₹499* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
+
+  const results = []
+  for (const m of members) {
+    let p = m.phone.replace(/\D/g, '')
+    if (p.startsWith('0')) p = '91' + p.slice(1)
+    if (!p.startsWith('91')) p = '91' + p
+    const jid = `${p}@s.whatsapp.net`
+    try {
+      await sock.sendMessage(jid, { text: msg })
+      await sock.sendMessage(jid, { image: qrBuffer, caption: `Scan to pay ₹499 — TechVerse Round 2`, mimetype: 'image/png' })
+      results.push({ name: m.name, status: 'sent' })
+    } catch (e) {
+      results.push({ name: m.name, status: 'failed', error: e.message })
+    }
+  }
+  res.json({ success: true, results })
+})
   const { teamName, members, domain, projectTitle, status } = req.body
   if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
   const msgs = {
