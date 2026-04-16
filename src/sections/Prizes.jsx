@@ -74,6 +74,22 @@ export default function Prizes() {
           ))}
         </div>
 
+        <div className={styles.feeSection}>
+          <h3 className={styles.feeTitle}>Fee Structure</h3>
+          <div className={styles.feeGrid}>
+            <div className={`glass-card ${styles.feeCard}`}>
+              <span className={styles.feeRound}>Round 1</span>
+              <p className={styles.feeName}>Registration Fee</p>
+              <p className={styles.feeAmount}>₹50 <span>/ per head</span></p>
+            </div>
+            <div className={`glass-card ${styles.feeCard}`}>
+              <span className={styles.feeRound}>Round 2</span>
+              <p className={styles.feeName}>After Shortlisting</p>
+              <p className={styles.feeAmount}>₹499 <span>/ per team</span></p>
+            </div>
+          </div>
+        </div>
+
         <div className={styles.cta}>
           <Link to="/register" className="btn btn-primary btn-lg">Register Now</Link>
         </div>

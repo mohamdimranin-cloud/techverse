@@ -62,3 +62,50 @@
 .perkCard p { font-size: 0.88rem; color: var(--text-muted); }
 
 .cta { text-align: center; }
+
+.feeSection { margin-bottom: 2.5rem; }
+.feeTitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.feeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.feeCard {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+.feeRound {
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--neon-purple);
+  border: 1px solid var(--neon-purple);
+  border-radius: 20px;
+  padding: 0.2rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.feeName {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.feeAmount {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+.feeAmount span {
+  font-family: inherit;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}

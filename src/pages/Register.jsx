@@ -16,7 +16,7 @@ const DOMAINS = [
 
 const UPI_ID = '7760543128@ibl'
 const UPI_NAME = 'TechVerse Hackathon'
-const FEE_PER_PERSON = 250
+const FEE_PER_PERSON = 50
 
 const emptyMember = { name: '', email: '', phone: '', role: '' }
 const STEPS = ['Team Info', 'Members', 'Project', 'Payment']
