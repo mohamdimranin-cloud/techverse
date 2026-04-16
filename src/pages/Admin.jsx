@@ -106,6 +106,34 @@ export default function Admin() {
     setConfirmStatus({ id, status, reg })
   }
 
+  const sendTicketEmails = async (reg, qrImageUrl) => {
+    const members = reg.members || []
+    const results = []
+    for (const m of members) {
+      if (!m.email) continue
+      try {
+        await emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID,
+          'template_3r2tw3g',
+          {
+            to_email: m.email,
+            member_name: m.name,
+            team_name: reg.team_name || reg.teamName,
+            ticket_id: reg.ticket_id || reg.ticketId,
+            domain: reg.domain,
+            qr_image_url: qrImageUrl,
+          },
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+        )
+        results.push({ name: m.name, status: 'sent' })
+      } catch (e) {
+        console.error(`Ticket email failed for ${m.email}:`, e)
+        results.push({ name: m.name, status: 'failed' })
+      }
+    }
+    return results
+  }
+
   const sendShortlistEmails = async (reg) => {
     const members = reg.members || []
     const results = []
@@ -499,6 +527,30 @@ export default function Admin() {
               <div className={styles.detailSection}>
                 <h4>💳 Payment</h4>
                 <p>Transaction ID: <span style={{ color: 'var(--neon-cyan)', fontWeight: 600 }}>{selected.txnId || '—'}</span></p>
+                <button
+                  className="btn btn-primary"
+                  style={{ marginTop: '0.75rem', width: '100%' }}
+                  onClick={async () => {
+                    try {
+                      // Get QR from server
+                      const waResult = await sendTicket({
+                        teamName: selected.teamName,
+                        members: selected.members,
+                        domain: selected.domain,
+                        projectTitle: selected.projectTitle,
+                        ticketId: selected.ticketId,
+                      })
+                      // Send email with QR image URL
+                      const qrUrl = waResult?.qr || ''
+                      const emailResults = await sendTicketEmails(selected, qrUrl)
+                      const sent = emailResults.filter(r => r.status === 'sent').length
+                      showToast(`Ticket sent via WA + Email to ${sent} member(s)`, 'success')
+                    } catch (e) {
+                      showToast(`Failed: ${e.message}`, 'warn')
+                    }
+                  }}>
+                  Send Ticket (WA + Email)
+                </button>
               </div>
 
               {(selected.ppt || selected.ppt_link) && (
