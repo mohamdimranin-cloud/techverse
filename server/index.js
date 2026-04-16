@@ -352,6 +352,8 @@ app.post('/api/send-payment-request', requireAuth, async (req, res) => {
   }
   res.json({ success: true, results })
 })
+
+app.post('/api/notify-status', requireAuth, async (req, res) => {
   const { teamName, members, domain, projectTitle, status } = req.body
   if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
   const msgs = {
