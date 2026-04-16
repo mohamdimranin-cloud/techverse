@@ -28,7 +28,7 @@ export default function Countdown() {
       <div className={styles.container}>
         {time ? (
           <>
-            <p className={styles.label}>⏳ Registration Closes In</p>
+            <p className={styles.label}>Registration Closes In</p>
             <div className={styles.timer}>
               {[['Days', time.days], ['Hours', time.hours], ['Mins', time.mins], ['Secs', time.secs]].map(([unit, val]) => (
                 <div key={unit} className={styles.block}>
@@ -38,11 +38,11 @@ export default function Countdown() {
               ))}
             </div>
             <p className={styles.date}>Deadline: 25 April 2026</p>
-            <Link to="/register" className="btn btn-primary">🔥 Register Before It's Too Late</Link>
+            <Link to="/register" className="btn btn-primary">Register Before It's Too Late</Link>
           </>
         ) : (
           <>
-            <p className={styles.label}>🔒 Registration Closed</p>
+            <p className={styles.label}>Registration Closed</p>
             <p className={styles.date}>Registration ended on 25 April 2026</p>
           </>
         )}

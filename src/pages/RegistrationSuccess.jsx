@@ -10,7 +10,7 @@ export default function RegistrationSuccess() {
     <div className={styles.page}>
       <div className={`glass-card ${styles.card}`}>
         <div className={styles.orb} />
-        <div className={styles.icon}>🚀</div>
+        <div className={styles.icon}></div>
         <h1 className={styles.title}>You're In the TechVerse!</h1>
         <p className={styles.team}>{teamName}</p>
         <p className={styles.msg}>
@@ -26,10 +26,10 @@ export default function RegistrationSuccess() {
         )}
 
         <div className={styles.steps}>
-          <div className={styles.step}><span>📧</span><p>Check your WhatsApp for registration confirmation</p></div>
-          <div className={styles.step}><span>⏳</span><p>Payment verification in progress</p></div>
-          <div className={styles.step}><span>🎟️</span><p>QR entry ticket will be sent once shortlisted</p></div>
-          <div className={styles.step}><span>📅</span><p>9 & 10 May 2026 — Bearys Institute of Technology</p></div>
+          <div className={styles.step}><span></span><p>Check your WhatsApp for registration confirmation</p></div>
+          <div className={styles.step}><span></span><p>Payment verification in progress</p></div>
+          <div className={styles.step}><span></span><p>QR entry ticket will be sent once shortlisted</p></div>
+          <div className={styles.step}><span></span><p>9 & 10 May 2026 — Bearys Institute of Technology</p></div>
         </div>
 
         <Link to="/" className="btn btn-primary btn-lg">← Back to Home</Link>

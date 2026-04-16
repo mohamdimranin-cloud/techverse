@@ -11,7 +11,7 @@ export default function About() {
   return (
     <section className="section" id="about">
       <div className="container">
-        <p className="section-tag">🌌 About</p>
+        <p className="section-tag">About</p>
         <h2 className="section-title">What is TechVerse?</h2>
         <div className={styles.grid}>
           <div className={`glass-card ${styles.card}`}>

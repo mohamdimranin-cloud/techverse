@@ -26,7 +26,7 @@ export default function Hero() {
 
       {/* Left: text */}
       <div className={styles.content}>
-        <p className={styles.eyebrow}>🚀 Bearys Institute of Technology Presents</p>
+        <p className={styles.eyebrow}>Bearys Institute of Technology Presents</p>
         <h1 className={styles.title}>
           TECHVERSE<br />
           <span>HACKATHON 2026</span>
@@ -40,17 +40,17 @@ export default function Hero() {
           where developers, designers, and innovators come together to build impactful solutions.
         </p>
         <div className={styles.btns}>
-          <Link to="/register" className="btn btn-primary btn-lg">🔥 Register Now</Link>
-          <a href="#domains" className="btn btn-outline btn-lg">📜 View Problem Statements</a>
+          <Link to="/register" className="btn btn-primary btn-lg">Register Now</Link>
+          <a href="#domains" className="btn btn-outline btn-lg">View Problem Statements</a>
         </div>
       </div>
 
       {/* Right: 3D Robot or fallback */}
       <div className={styles.robotWrap}>
         {isLowEnd ? (
-          <div className={styles.robotFallback}>🤖</div>
+          <div className={styles.robotFallback}></div>
         ) : (
-          <Suspense fallback={<div className={styles.robotFallback}>🤖</div>}>
+          <Suspense fallback={<div className={styles.robotFallback}></div>}>
             <Robot3D />
           </Suspense>
         )}

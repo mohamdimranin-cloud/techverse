@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './Prizes.module.css'
 
 const perks = [
-  { icon: '🏆', label: 'Cash Prizes' },
-  { icon: '📜', label: 'Certificates' },
-  { icon: '🏢', label: 'Incubation Facilities' },
-  { icon: '🧑‍💼', label: 'Mentorship' },
-  { icon: '💰', label: 'Grants & Investments' },
+  { icon: '', label: 'Cash Prizes' },
+  { icon: '', label: 'Certificates' },
+  { icon: '', label: 'Incubation Facilities' },
+  { icon: '', label: 'Mentorship' },
+  { icon: '', label: 'Grants & Investments' },
 ]
 
 function useCountUp(target, duration = 2200) {
@@ -53,7 +53,7 @@ export default function Prizes() {
   return (
     <section className="section" id="prizes">
       <div className="container">
-        <p className="section-tag">🏆 Rewards</p>
+        <p className="section-tag">Rewards</p>
         <h2 className="section-title">Prizes</h2>
 
         <div className={`glass-card ${styles.pool}`} ref={ref}>
@@ -75,7 +75,7 @@ export default function Prizes() {
         </div>
 
         <div className={styles.cta}>
-          <Link to="/register" className="btn btn-primary btn-lg">🔥 Register Now</Link>
+          <Link to="/register" className="btn btn-primary btn-lg">Register Now</Link>
         </div>
       </div>
     </section>

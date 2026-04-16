@@ -12,7 +12,7 @@ export default function Sponsors() {
   return (
     <section className="section section-alt" id="sponsors">
       <div className="container">
-        <p className="section-tag">🤝 Partners</p>
+        <p className="section-tag">Partners</p>
         <h2 className="section-title">Sponsors & Partners</h2>
         <p className={styles.sub}>Powered by innovation, supported by industry leaders.</p>
         <div className={styles.grid}>

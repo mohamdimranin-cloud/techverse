@@ -61,7 +61,7 @@ export default function IntroLoader({ onDone }) {
           </Canvas>
         </div>
       )}
-      {isLowEnd && <div style={{ fontSize: '5rem', marginBottom: '1rem' }}>🤖</div>}
+      {isLowEnd && <div style={{ fontSize: '5rem', marginBottom: '1rem' }}></div>}
 
       <div className={styles.text}>
         <p className={styles.tag}>Bearys Institute of Technology Presents</p>

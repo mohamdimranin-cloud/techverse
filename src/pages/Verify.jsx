@@ -58,7 +58,7 @@ export default function Verify() {
   return (
     <div className={styles.page}>
       <div className={`glass-card ${styles.card}`}>
-        <h1 className={styles.title}>🎟️ Entry Verification</h1>
+        <h1 className={styles.title}>Entry Verification</h1>
         <p className={styles.sub}>TechVerse Hackathon 2026 — Check-in</p>
 
         {/* Scanner */}
@@ -66,12 +66,12 @@ export default function Verify() {
 
         {!scanning && !result && (
           <button className="btn btn-primary" style={{ width: '100%', marginBottom: '1rem' }} onClick={startScanner}>
-            📷 Scan QR Code
+            Scan QR Code
           </button>
         )}
         {scanning && (
           <button className="btn btn-outline" style={{ width: '100%', marginBottom: '1rem' }} onClick={stopScanner}>
-            ✕ Stop Scanner
+            Stop Scanner
           </button>
         )}
 
@@ -93,20 +93,20 @@ export default function Verify() {
           <div className={`${styles.result} ${result.success ? styles.success : styles.fail}`}>
             {result.success ? (
               <>
-                <div className={styles.resultIcon}>✅</div>
+                <div className={styles.resultIcon}>Granted</div>
                 <h2>Entry Granted</h2>
                 <p className={styles.teamName}>{result.reg?.team_name || result.reg?.teamName}</p>
                 <div className={styles.details}>
-                  <span>🎟️ {result.reg?.ticket_id || result.reg?.ticketId}</span>
-                  <span>📌 {result.reg?.domain}</span>
-                  <span>👥 {result.reg?.team_size || result.reg?.teamSize} members</span>
-                  <span>🏫 {result.reg?.college}</span>
+                  <span>{result.reg?.ticket_id || result.reg?.ticketId}</span>
+                  <span>{result.reg?.domain}</span>
+                  <span>{result.reg?.team_size || result.reg?.teamSize} members</span>
+                  <span>{result.reg?.college}</span>
                 </div>
                 <p className={styles.checkinTime}>Checked in at {new Date().toLocaleTimeString()}</p>
               </>
             ) : (
               <>
-                <div className={styles.resultIcon}>{result.reg ? '⚠️' : '❌'}</div>
+                <div className={styles.resultIcon}>{result.reg ? 'Warning' : 'Invalid'}</div>
                 <h2>{result.reg ? 'Already Checked In' : 'Invalid Ticket'}</h2>
                 <p>{result.error}</p>
                 {result.reg && (

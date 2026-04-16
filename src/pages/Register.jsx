@@ -69,7 +69,7 @@ export default function Register() {
       setPptFile(null); return
     }
     if (file.size > 10 * 1024 * 1024) {
-      setPptError(`❌ File too large (${(file.size/1024/1024).toFixed(1)}MB). Maximum is 10MB. Please compress or use the link option.`)
+      setPptError(`File too large (${(file.size/1024/1024).toFixed(1)}MB). Maximum is 10MB. Please compress or use the link option.`)
       setPptFile(null); return
     }
     setPptFile(file)
@@ -136,7 +136,7 @@ export default function Register() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <p className="section-tag">🚀 Join the Universe</p>
+          <p className="section-tag">Join the Universe</p>
           <h1 className={styles.title}>Register Your Team</h1>
           <p className={styles.sub}>Step into the TechVerse. Code the Future. Shape the Universe.</p>
         </div>
@@ -201,7 +201,7 @@ export default function Register() {
                 <h2 className={styles.stepTitle}>Team Members</h2>
                 {form.members.map((m, i) => (
                   <div key={i} className={styles.memberBlock}>
-                    <h3 className={styles.memberHeading}>{i === 0 ? '👑 Team Leader' : `👤 Member ${i + 1}`}</h3>
+                    <h3 className={styles.memberHeading}>{i === 0 ? 'Team Leader' : `Member ${i + 1}`}</h3>
                     <div className={styles.row}>
                       <div className={styles.field}>
                         <label>Full Name *</label>
@@ -266,23 +266,23 @@ export default function Register() {
                     <button type="button"
                       className={`${styles.toggleBtn} ${pptMode === 'upload' ? styles.toggleActive : ''}`}
                       onClick={() => { setPptMode('upload'); set('pptLink', ''); setPptError('') }}>
-                      📤 Upload File
+                      Upload File
                     </button>
                     <button type="button"
                       className={`${styles.toggleBtn} ${pptMode === 'link' ? styles.toggleActive : ''}`}
                       onClick={() => { setPptMode('link'); setPptFile(null); setPptError('') }}>
-                      🔗 Share Link
+                      Share Link
                     </button>
                   </div>
 
                   {pptMode === 'upload' && (
                     <>
-                      <p className={styles.pptNote}>⚠️ Max file size: <strong>10MB</strong>. Files above 10MB will be rejected.</p>
+                      <p className={styles.pptNote}>Max file size: <strong>10MB</strong>. Files above 10MB will be rejected.</p>
                       <label className={`${styles.uploadBox} ${pptFile ? styles.uploadDone : ''}`}>
                         <input type="file" accept=".ppt,.pptx" onChange={handlePpt} style={{ display: 'none' }} />
                         {pptFile ? (
                           <div className={styles.uploadedFile}>
-                            <span>📊</span>
+                            <span></span>
                             <div>
                               <p className={styles.fileName}>{pptFile.name}</p>
                               <p className={styles.fileSize}>{(pptFile.size / 1024 / 1024).toFixed(2)} MB</p>
@@ -291,7 +291,7 @@ export default function Register() {
                           </div>
                         ) : (
                           <div className={styles.uploadPrompt}>
-                            <span>📤</span>
+                            <span></span>
                             <p>Click to upload .ppt or .pptx</p>
                             <p className={styles.hint}>Max 10MB</p>
                           </div>
@@ -302,7 +302,7 @@ export default function Register() {
 
                   {pptMode === 'link' && (
                     <>
-                      <p className={styles.pptNote}>📁 Upload to Google Drive → Share → Anyone with link → Paste below</p>
+                      <p className={styles.pptNote}>Upload to Google Drive → Share → Anyone with link → Paste below</p>
                       <input
                         type="url"
                         placeholder="https://drive.google.com/file/d/..."
@@ -321,7 +321,7 @@ export default function Register() {
                     <span>Domain</span><span>{form.domain}</span>
                     <span>College</span><span>{form.college}</span>
                     <span>Members</span><span>{form.teamSize}</span>
-                    <span>PPT</span><span>{pptFile ? `📤 ${pptFile.name}` : form.pptLink ? '🔗 Link provided' : 'Not provided'}</span>
+                    <span>PPT</span><span>{pptFile ? `${pptFile.name}` : form.pptLink ? 'Link provided' : 'Not provided'}</span>
                   </div>
                 </div>
                 <label className={styles.checkLabel}>
@@ -393,10 +393,10 @@ export default function Register() {
                         <a href={`upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${totalAmount}&cu=INR`}
                           className={`${styles.appBtn} ${styles.upiGeneric}`}
                           onClick={e => { if (!/android|iphone|ipad/i.test(navigator.userAgent)) { e.preventDefault(); alert('UPI app links only work on mobile. Please scan the QR code above or manually enter the UPI ID.') } }}>
-                          💳 Any UPI App
+                          Any UPI App
                         </a>
                       </div>
-                      <p className={styles.desktopNote}>📱 On mobile? Tap above to open your UPI app directly. On desktop, scan the QR code.</p>
+                      <p className={styles.desktopNote}>On mobile? Tap above to open your UPI app directly. On desktop, scan the QR code.</p>
 
                       <div className={styles.field} style={{ width: '100%', marginTop: '0.5rem' }}>
                         <label>UPI Transaction ID * <span className={styles.hint}>(enter after payment)</span></label>
@@ -418,7 +418,7 @@ export default function Register() {
             <div className={styles.nav}>
               {step > 1 && <button type="button" className="btn btn-outline" onClick={back}>← Back</button>}
               {step < 4 && <button type="button" className="btn btn-primary" onClick={next}>Next →</button>}
-              {step === 4 && <button type="submit" className="btn btn-primary">🚀 Submit Registration</button>}
+              {step === 4 && <button type="submit" className="btn btn-primary">Submit Registration</button>}
             </div>
           </div>
         </form>

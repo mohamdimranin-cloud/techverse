@@ -14,7 +14,7 @@ export default function Navbar() {
 
   return (
     <nav className={styles.nav}>
-      <Link to="/" className={styles.logo}>⚡ TechVerse</Link>
+      <Link to="/" className={styles.logo}>TechVerse</Link>
       <ul className={styles.links}>
         {links.map(l => (
           <li key={l.href}>
