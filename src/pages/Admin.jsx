@@ -500,8 +500,8 @@ export default function Admin() {
                         members: selected.members,
                       })
                       if (data.success) showToast(`Payment request sent to ${data.results.filter(r => r.status === 'sent').length} member(s)`, 'success')
-                      else showToast(`⚠️ ${data.error}`, 'warn')
-                    } catch { showToast('⚠️ WhatsApp server unreachable', 'warn') }
+                      else showToast(`⚠️ ${data.error || 'Failed to send'}`, 'warn')
+                    } catch (err) { showToast(`⚠️ ${err.message}`, 'warn') }
                   }}>
                   Send Payment Request (₹499)
                 </button>
