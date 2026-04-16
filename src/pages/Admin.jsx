@@ -41,6 +41,7 @@ export default function Admin() {
   }
   const [waConnected, setWaConnected] = useState(false)
   const reload = () => fetchRegistrations().then(rows => {
+    if (!Array.isArray(rows)) return
     // Normalize snake_case DB fields to camelCase for the UI
     setRegistrations(rows.map(r => ({
       ...r,

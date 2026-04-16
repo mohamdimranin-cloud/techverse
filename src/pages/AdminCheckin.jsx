@@ -11,7 +11,10 @@ export default function AdminCheckin() {
   const [search, setSearch] = useState('')
   const html5QrRef = useRef(null)
 
-  const reload = () => fetchRegistrations().then(setRegistrations)
+  const reload = () => fetchRegistrations().then(data => {
+    if (Array.isArray(data)) setRegistrations(data)
+    else console.warn('fetchRegistrations returned non-array:', data)
+  })
   useEffect(() => { reload() }, [])
 
   const checkedIn = registrations.filter(r => r.checked_in)
