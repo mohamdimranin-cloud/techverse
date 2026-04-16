@@ -8,7 +8,6 @@ import WhyJoin from '../sections/WhyJoin'
 import Timeline from '../sections/Timeline'
 import Judging from '../sections/Judging'
 import Sponsors from '../sections/Sponsors'
-import Contact from '../sections/Contact'
 import Footer from '../sections/Footer'
 
 export default function Home() {
@@ -24,7 +23,6 @@ export default function Home() {
       <Timeline />
       <Judging />
       <Sponsors />
-      <Contact />
       <Footer />
     </main>
   )
