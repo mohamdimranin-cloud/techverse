@@ -1,10 +1,10 @@
 import styles from './WhyJoin.module.css'
 
 const gains = [
-  { icon: '', text: 'Real World Problem Exposure' },
-  { icon: '', text: 'Evaluation by Faculty & Domain Experts' },
-  { icon: '', text: 'Direct Mentorship During the Build Phase' },
-  { icon: '', text: 'Path to Investors & Government Presentation' },
+  { icon: '🌍', text: 'Real World Problem Exposure' },
+  { icon: '🎓', text: 'Evaluation by Faculty & Domain Experts' },
+  { icon: '🤝', text: 'Direct Mentorship During the Build Phase' },
+  { icon: '📈', text: 'Path to Investors & Government Presentation' },
 ]
 
 export default function WhyJoin() {
