@@ -14,7 +14,7 @@ export default function RegistrationSuccess() {
         <h1 className={styles.title}>You're In the TechVerse!</h1>
         <p className={styles.team}>{teamName}</p>
         <p className={styles.msg}>
-          Round 1 payment is under verification. If shortlisted, you'll receive a WhatsApp message with Round 2 payment details (₹499/team) to confirm your spot.
+          Round 1 payment is under verification. After shortlisting, a payment request of ₹499 will be sent via WhatsApp. Once the payment is confirmed, your QR code ticket will be issued.
         </p>
 
         {ticketId && (

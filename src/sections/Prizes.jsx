@@ -88,6 +88,9 @@ export default function Prizes() {
               <p className={styles.feeAmount}>₹499 <span>/ per team</span></p>
             </div>
           </div>
+          <p className={styles.feeNote}>
+            After shortlisting, a payment request of ₹499 will be sent via WhatsApp. Once confirmed, your QR code ticket will be issued.
+          </p>
         </div>
 
         <div className={styles.cta}>

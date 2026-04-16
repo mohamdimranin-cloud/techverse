@@ -109,3 +109,11 @@
   color: var(--text-muted);
   font-weight: 400;
 }
+
+.feeNote {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 1rem;
+  line-height: 1.6;
+}
