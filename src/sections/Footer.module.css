@@ -2,6 +2,8 @@
   position: relative; z-index: 1;
   border-top: 1px solid var(--glass-border);
   padding: 3rem 2rem 1.5rem;
+  background: rgba(2, 8, 23, 0.85);
+  backdrop-filter: blur(12px);
 }
 
 .top {
