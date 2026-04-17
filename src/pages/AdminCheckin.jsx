@@ -28,20 +28,23 @@ export default function AdminCheckin() {
   const processingRef = useRef(false)
 
   const handleScan = async (text) => {
-    if (processingRef.current) return  // debounce duplicate scans
+    if (processingRef.current) return
     processingRef.current = true
+    // pause scanner immediately to prevent duplicate reads
+    try { if (html5QrRef.current) await html5QrRef.current.pause() } catch {}
 
     const id = text.replace('TECHVERSE2026:', '').trim()
     const outcome = await checkInTicket(id)
     setResult(outcome)
     reload()
 
-    // Only stop scanner when all members are in, or on hard error
     if (outcome.fullyCheckedIn || !outcome.success) {
       stopScanner()
+    } else {
+      // resume for next member scan
+      try { if (html5QrRef.current) await html5QrRef.current.resume() } catch {}
+      setTimeout(() => { processingRef.current = false }, 2500)
     }
-    // brief cooldown before allowing next scan
-    setTimeout(() => { processingRef.current = false }, 2000)
   }
 
   const startScanner = async () => {
@@ -128,7 +131,12 @@ export default function AdminCheckin() {
                 )}
                 {result.success && result.fullyCheckedIn && (
                   <p className={styles.resultErr} style={{ color: '#f59e0b' }}>
-                    QR now expired — all members entered
+                    QR expired — all members entered
+                  </p>
+                )}
+                {!result.success && result.error?.includes('already checked in') && (
+                  <p className={styles.resultErr} style={{ color: '#f87171' }}>
+                    All members for this team have already entered
                   </p>
                 )}
                 {result.success && <p className={styles.resultTime}>✓ {new Date().toLocaleTimeString()}</p>}

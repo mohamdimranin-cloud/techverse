@@ -5,13 +5,9 @@ import { submitRegistration, notifyRegistration, uploadPptToCloudinary } from '.
 import styles from './Register.module.css'
 
 const DOMAINS = [
-  'Agritech',
-  'Fisheries & Coastal Solutions',
-  'Health Technology',
-  'Cybersecurity',
-  'Energy Automation & Digitalisation',
-  'Green & Sustainable Development',
-  'Open Category',
+  { theme: 'Rural Tech', options: ['Agritech', 'Fisheries & Coastal Solutions'] },
+  { theme: 'MedTech', options: ['Health Technology'] },
+  { theme: 'Future Tech', options: ['Cybersecurity', 'Energy Conservation & Digitization'] },
 ]
 
 const UPI_ID = '7760543128@ibl'
@@ -171,7 +167,11 @@ export default function Register() {
                   <select value={form.domain} onChange={e => set('domain', e.target.value)}
                     className={errors.domain ? styles.inputError : ''}>
                     <option value="">Select a domain</option>
-                    {DOMAINS.map(d => <option key={d} value={d}>{d}</option>)}
+                    {DOMAINS.map(group => (
+                      <optgroup key={group.theme} label={group.theme}>
+                        {group.options.map(d => <option key={d} value={d}>{d}</option>)}
+                      </optgroup>
+                    ))}
                   </select>
                   {errors.domain && <span className={styles.error}>{errors.domain}</span>}
                 </div>
