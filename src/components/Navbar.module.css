@@ -18,6 +18,14 @@
   background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.logoIcon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(168,85,247,0.6));
 }
 
 .links {
