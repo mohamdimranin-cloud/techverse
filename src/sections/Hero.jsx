@@ -41,7 +41,7 @@ export default function Hero() {
         </p>
         <div className={styles.btns}>
           <Link to="/register" className="btn btn-primary btn-lg">Register Now</Link>
-          <a href="#domains" className="btn btn-outline btn-lg">View Problem Statements</a>
+          <a href="#rules" className="btn btn-outline btn-lg">Rules & Guidelines</a>
         </div>
       </div>
 

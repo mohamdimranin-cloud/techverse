@@ -64,6 +64,9 @@ export default function Admin() {
   useEffect(() => {
     if (authed) {
       reload()
+      // Poll registrations every 10 seconds for live updates
+      const regInterval = setInterval(reload, 10000)
+
       const check = async () => {
         try {
           const data = await getWAStatus()
@@ -75,8 +78,8 @@ export default function Admin() {
         } catch { setWaConnected(false) }
       }
       check()
-      const interval = setInterval(check, 4000)
-      return () => clearInterval(interval)
+      const waInterval = setInterval(check, 4000)
+      return () => { clearInterval(regInterval); clearInterval(waInterval) }
     }
   }, [authed])
 
@@ -203,11 +206,26 @@ export default function Admin() {
       if (pptName) {
         try {
           const pptData = await downloadPptAPI(r.id)
-          if (pptData?.data) {
-            const buf = Buffer.from ? Buffer.from(pptData.data.split(',')[1], 'base64') : null
-            if (buf) { pptFolder.file(`${teamName}_${pptName}`, buf); pptCount++ }
+          if (pptData?.url) {
+            // Cloudinary URL — fetch the file
+            const res = await fetch(pptData.url)
+            if (res.ok) {
+              const arrayBuf = await res.arrayBuffer()
+              pptFolder.file(`${teamName}_${pptName}`, arrayBuf)
+              pptCount++
+            } else {
+              pptStatus = 'Download failed'
+            }
+          } else if (pptData?.data) {
+            // Legacy base64
+            const base64 = pptData.data.includes(',') ? pptData.data.split(',')[1] : pptData.data
+            const binary = atob(base64)
+            const bytes = new Uint8Array(binary.length)
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+            pptFolder.file(`${teamName}_${pptName}`, bytes)
+            pptCount++
           }
-        } catch { pptStatus = 'Error reading' }
+        } catch (e) { pptStatus = 'Error: ' + e.message }
       }
       const members = r.members || []
       members.forEach((m, j) => {
@@ -221,6 +239,7 @@ export default function Admin() {
           'Status': r.status, 'Transaction ID': r.txn_id || r.txnId || '',
           'Ticket ID': r.ticket_id || r.ticketId || '',
           'PPT File': pptStatus,
+          'PPT Link': r.ppt_link || '',
           'Registered At': new Date(r.registered_at || r.registeredAt).toLocaleString(),
         })
       })
