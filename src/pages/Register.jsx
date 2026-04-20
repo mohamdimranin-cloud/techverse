@@ -100,9 +100,12 @@ export default function Register() {
   const next = () => { if (validateStep()) setStep(s => s + 1) }
   const back = () => setStep(s => s - 1)
 
+  const [submitting, setSubmitting] = useState(false)
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validateStep()) return
+    if (!validateStep() || submitting) return
+    setSubmitting(true)
 
     const result = await submitRegistration({
       ...form,
@@ -111,21 +114,20 @@ export default function Register() {
       pptLink: form.pptLink || null,
     })
 
-    if (!result.id) { alert('Registration failed. Please try again.'); return }
-
-    // Upload PPT to Cloudinary if file selected
-    if (pptFile && pptMode === 'upload') {
-      try {
-        await uploadPptToCloudinary(pptFile, result.id)
-      } catch (err) {
-        console.error('PPT upload failed:', err.message)
-      }
+    if (!result.id) {
+      alert('Registration failed. Please try again.')
+      setSubmitting(false)
+      return
     }
 
-    // No PPT file upload needed - using Google Drive link
-    notifyRegistration({ teamName: form.teamName, members: form.members, domain: form.domain, projectTitle: form.projectTitle, txnId })
-
+    // Navigate immediately — don't wait for WA or PPT upload
     navigate('/register/success', { state: { teamName: form.teamName, id: result.id, ticketId: result.ticketId } })
+
+    // Fire and forget in background
+    if (pptFile && pptMode === 'upload') {
+      uploadPptToCloudinary(pptFile, result.id).catch(err => console.error('PPT upload failed:', err.message))
+    }
+    notifyRegistration({ teamName: form.teamName, members: form.members, domain: form.domain, projectTitle: form.projectTitle, txnId })
   }
 
   return (
@@ -418,7 +420,7 @@ export default function Register() {
             <div className={styles.nav}>
               {step > 1 && <button type="button" className="btn btn-outline" onClick={back}>← Back</button>}
               {step < 4 && <button type="button" className="btn btn-primary" onClick={next}>Next →</button>}
-              {step === 4 && <button type="submit" className="btn btn-primary">Submit Registration</button>}
+              {step === 4 && <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Registration'}</button>}
             </div>
           </div>
         </form>
