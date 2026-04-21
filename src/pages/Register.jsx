@@ -127,7 +127,7 @@ export default function Register() {
     if (pptFile && pptMode === 'upload') {
       uploadPptToCloudinary(pptFile, result.id).catch(err => console.error('PPT upload failed:', err.message))
     }
-    notifyRegistration({ teamName: form.teamName, members: form.members, domain: form.domain, projectTitle: form.projectTitle, txnId })
+    notifyRegistration({ teamName: form.teamName, members: form.members, domain: form.domain, projectTitle: form.projectTitle, txnId, ticketId: result.ticketId, hasPpt: !!(pptFile || form.pptLink) })
   }
 
   return (

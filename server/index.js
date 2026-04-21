@@ -302,9 +302,14 @@ app.patch('/api/registrations/:id/ppt-url', async (req, res) => {
 })
 
 app.post('/api/notify-registration', async (req, res) => {
-  const { teamName, members, domain, projectTitle, txnId } = req.body
+  const { teamName, members, domain, projectTitle, txnId, ticketId, hasPpt } = req.body
   if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
-  const msg = `✅ *Registration Confirmed!*\n\nHey Team *${teamName}*, your registration for *TechVerse Hackathon 2026* is complete! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n💳 *Transaction ID:* ${txnId || 'N/A'}\n\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\nThank you for registering. Your payment is under verification. Confirmation will be shared once complete.\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`
+
+  const uploadLine = !hasPpt
+    ? `\n\n📎 *Upload your PPT here:*\nhttps://bit-techverse.netlify.app/upload\n_(Use your Registration ID: ${ticketId})_`
+    : ''
+
+  const msg = `✅ *Registration Confirmed!*\n\nHey Team *${teamName}*, your registration for *TechVerse Hackathon 2026* is complete! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n💳 *Transaction ID:* ${txnId || 'N/A'}\n🎫 *Registration ID:* ${ticketId || 'N/A'}${uploadLine}\n\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\nThank you for registering. Your payment is under verification.\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`
   const results = []
   for (const m of members) {
     try { await sendWA(m.phone, msg); results.push({ name: m.name, status: 'sent' }) }
