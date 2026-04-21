@@ -5,6 +5,7 @@ export default function RegistrationSuccess() {
   const { state } = useLocation()
   const teamName = state?.teamName || 'Your Team'
   const ticketId = state?.ticketId
+  const hasPpt = state?.hasPpt || false
 
   return (
     <div className={styles.page}>
@@ -24,6 +25,15 @@ export default function RegistrationSuccess() {
           </div>
         )}
 
+        {!hasPpt && (
+          <div className={styles.uploadAlert}>
+            <p>You haven't uploaded your PPT yet. Please upload it as soon as possible.</p>
+            <Link to="/upload" className="btn btn-primary" style={{ marginTop: '0.75rem', display: 'inline-block' }}>
+              Upload PPT Now
+            </Link>
+          </div>
+        )}
+
         <div className={styles.steps}>
           <div className={styles.step}><span></span><p>Round 1 — ₹50/head registration fee paid</p></div>
           <div className={styles.step}><span></span><p>Payment verification in progress</p></div>
@@ -32,7 +42,7 @@ export default function RegistrationSuccess() {
           <div className={styles.step}><span></span><p>9 & 10 May 2026 — Bearys Institute of Technology</p></div>
         </div>
 
-        <Link to="/" className="btn btn-primary btn-lg">← Back to Home</Link>
+        <Link to="/" className="btn btn-outline btn-lg">← Back to Home</Link>
       </div>
     </div>
   )

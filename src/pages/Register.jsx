@@ -121,7 +121,7 @@ export default function Register() {
     }
 
     // Navigate immediately — don't wait for WA or PPT upload
-    navigate('/register/success', { state: { teamName: form.teamName, id: result.id, ticketId: result.ticketId } })
+    navigate('/register/success', { state: { teamName: form.teamName, id: result.id, ticketId: result.ticketId, hasPpt: !!(pptFile || form.pptLink) } })
 
     // Fire and forget in background
     if (pptFile && pptMode === 'upload') {

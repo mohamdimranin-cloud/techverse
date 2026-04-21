@@ -7,6 +7,7 @@ import IntroLoader from './components/IntroLoader'
 import Home from './pages/Home'
 import Register from './pages/Register'
 import RegistrationSuccess from './pages/RegistrationSuccess'
+import UploadPPT from './pages/UploadPPT'
 import Admin from './pages/Admin'
 import Verify from './pages/Verify'
 
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/register" element={<Register />} />
               <Route path="/register/success" element={<RegistrationSuccess />} />
+              <Route path="/upload" element={<UploadPPT />} />
             </Routes>
           </>
         } />

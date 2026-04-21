@@ -105,6 +105,12 @@ app.post('/api/register', async (req, res) => {
   } finally { client.release() }
 })
 
+app.get('/api/registration-by-ticket/:ticketId', async (req, res) => {
+  const { rows } = await pool.query(`SELECT id, ticket_id, team_name FROM registrations WHERE ticket_id=$1`, [req.params.ticketId])
+  if (!rows[0]) return res.status(404).json({ error: 'Not found' })
+  res.json({ id: rows[0].id, ticketId: rows[0].ticket_id, teamName: rows[0].team_name })
+})
+
 app.get('/api/registrations', requireAuth, async (req, res) => {
   const { rows } = await pool.query(`
     SELECT r.*, json_agg(json_build_object('name',m.name,'email',m.email,'phone',m.phone,'role',m.role,'isLeader',m.is_leader) ORDER BY m.is_leader DESC) AS members

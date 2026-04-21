@@ -1,0 +1,72 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  padding: 2.5rem;
+  position: relative;
+}
+
+.title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.4rem;
+}
+
+.sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+.form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+.field input {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--neon-purple); }
+
+.hint { font-size: 0.75rem; color: var(--text-muted); }
+.error { font-size: 0.8rem; color: #f87171; }
+.idConfirm { font-size: 0.85rem; color: var(--text-muted); }
+.idConfirm strong { color: var(--neon-cyan); }
+
+.uploadBox {
+  border: 2px dashed var(--glass-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: block;
+}
+.uploadBox:hover { border-color: var(--neon-purple); }
+.uploadDone { border-color: var(--neon-cyan); border-style: solid; }
+
+.uploadPrompt { text-align: center; color: var(--text-muted); }
+.uploadPrompt span { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+.uploadPrompt p { font-size: 0.9rem; }
+
+.fileInfo { display: flex; align-items: center; gap: 1rem; }
+.fileInfo > span:first-child { font-size: 2rem; }
+.fileName { font-size: 0.9rem; font-weight: 600; }
+.fileSize { font-size: 0.78rem; color: var(--text-muted); }
+
+.successBox { text-align: center; padding: 1rem 0; }
+.successIcon { font-size: 3rem; color: var(--neon-cyan); margin-bottom: 0.5rem; }
+.successMsg { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+.successSub { color: var(--text-muted); font-size: 0.9rem; }
