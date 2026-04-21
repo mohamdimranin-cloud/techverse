@@ -35,6 +35,7 @@ export default function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/register/success" element={<RegistrationSuccess />} />
               <Route path="/upload" element={<UploadPPT />} />
+              <Route path="/upload/:ticketId" element={<UploadPPT />} />
             </Routes>
           </>
         } />

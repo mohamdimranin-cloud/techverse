@@ -1,14 +1,39 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import { uploadPptToCloudinary } from '../api/client'
 import styles from './UploadPPT.module.css'
 
 export default function UploadPPT() {
-  const [ticketId, setTicketId] = useState('')
+  const { ticketId: paramTicketId } = useParams()
+  const [ticketId, setTicketId] = useState(paramTicketId || '')
   const [regId, setRegId] = useState('')
   const [pptFile, setPptFile] = useState(null)
   const [pptError, setPptError] = useState('')
-  const [status, setStatus] = useState(null) // 'uploading' | 'success' | 'error'
-  const [step, setStep] = useState(1) // 1=enter ID, 2=upload file
+  const [status, setStatus] = useState(null)
+  const [step, setStep] = useState(paramTicketId ? 'loading' : 1)
+
+  // Auto-lookup if ticket ID came from URL
+  useEffect(() => {
+    if (paramTicketId) {
+      lookupTicket(paramTicketId)
+    }
+  }, [paramTicketId])
+
+  const lookupTicket = async (id) => {
+    setStatus('loading')
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/registration-by-ticket/${id.trim().toUpperCase()}`)
+      const data = await res.json()
+      if (!data.id) { setStatus('notfound'); setStep(1); return }
+      setRegId(data.id)
+      setTicketId(id.trim().toUpperCase())
+      setStatus(null)
+      setStep(2)
+    } catch {
+      setStatus('error')
+      setStep(1)
+    }
+  }
 
   const handleFile = (e) => {
     const file = e.target.files[0]
@@ -22,18 +47,7 @@ export default function UploadPPT() {
   const handleLookup = async (e) => {
     e.preventDefault()
     if (!ticketId.trim()) return
-    // We use ticketId as the registration lookup — server needs to find reg by ticket_id
-    setStatus('loading')
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/registration-by-ticket/${ticketId.trim().toUpperCase()}`)
-      const data = await res.json()
-      if (!data.id) { setStatus('notfound'); return }
-      setRegId(data.id)
-      setStatus(null)
-      setStep(2)
-    } catch {
-      setStatus('error')
-    }
+    await lookupTicket(ticketId)
   }
 
   const handleUpload = async (e) => {
@@ -55,7 +69,9 @@ export default function UploadPPT() {
         <h1 className={styles.title}>Upload Your PPT</h1>
         <p className={styles.sub}>Submit your presentation for TechVerse Hackathon 2026</p>
 
-        {status === 'success' ? (
+        {step === 'loading' ? (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>Looking up your registration...</p>
+        ) : status === 'success' ? (
           <div className={styles.successBox}>
             <p className={styles.successIcon}>✓</p>
             <p className={styles.successMsg}>PPT uploaded successfully!</p>
@@ -113,5 +129,7 @@ export default function UploadPPT() {
         )}
       </div>
     </div>
+  )
+}    </div>
   )
 }
