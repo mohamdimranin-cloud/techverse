@@ -12,15 +12,13 @@ export default function UploadPPT() {
   const [status, setStatus] = useState(null)
   const [step, setStep] = useState(paramTicketId ? 'loading' : 1)
 
-  // Auto-lookup if ticket ID came from URL
   useEffect(() => {
-    if (paramTicketId) {
-      lookupTicket(paramTicketId)
-    }
+    if (paramTicketId) lookupTicket(paramTicketId)
   }, [paramTicketId])
 
   const lookupTicket = async (id) => {
-    setStatus('loading')
+    setStep('loading')
+    setStatus(null)
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/registration-by-ticket/${id.trim().toUpperCase()}`)
       const data = await res.json()
@@ -59,7 +57,7 @@ export default function UploadPPT() {
       setStatus('success')
     } catch (err) {
       setPptError(err.message)
-      setStatus('error')
+      setStatus(null)
     }
   }
 
@@ -69,35 +67,43 @@ export default function UploadPPT() {
         <h1 className={styles.title}>Upload Your PPT</h1>
         <p className={styles.sub}>Submit your presentation for TechVerse Hackathon 2026</p>
 
-        {step === 'loading' ? (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center' }}>Looking up your registration...</p>
-        ) : status === 'success' ? (
+        {step === 'loading' && (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+            Looking up your registration...
+          </p>
+        )}
+
+        {status === 'success' && (
           <div className={styles.successBox}>
             <p className={styles.successIcon}>✓</p>
             <p className={styles.successMsg}>PPT uploaded successfully!</p>
             <p className={styles.successSub}>Your presentation has been received. Good luck!</p>
           </div>
-        ) : step === 1 ? (
+        )}
+
+        {step === 1 && status !== 'success' && (
           <form onSubmit={handleLookup} className={styles.form}>
             <div className={styles.field}>
               <label>Registration ID</label>
               <input
                 type="text"
-                placeholder="e.g. TV2026-XXXXX-XXXXXX"
+                placeholder="e.g. TV2026-XXXXX-XXXXXXXXX"
                 value={ticketId}
                 onChange={e => { setTicketId(e.target.value); setStatus(null) }}
               />
-              <p className={styles.hint}>Find your Registration ID in the confirmation message sent to your WhatsApp.</p>
+              <p className={styles.hint}>Find your Registration ID in the WhatsApp confirmation message.</p>
             </div>
             {status === 'notfound' && <p className={styles.error}>Registration not found. Check your ID and try again.</p>}
             {status === 'error' && <p className={styles.error}>Something went wrong. Please try again.</p>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={status === 'loading'}>
-              {status === 'loading' ? 'Looking up...' : 'Continue'}
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+              Continue
             </button>
           </form>
-        ) : (
+        )}
+
+        {step === 2 && status !== 'success' && (
           <form onSubmit={handleUpload} className={styles.form}>
-            <p className={styles.idConfirm}>Registration ID: <strong>{ticketId.toUpperCase()}</strong></p>
+            <p className={styles.idConfirm}>Registration ID: <strong>{ticketId}</strong></p>
             <div className={styles.field}>
               <label>Select PPT File *</label>
               <p className={styles.hint}>Max 10MB · .ppt or .pptx only</p>
@@ -129,7 +135,5 @@ export default function UploadPPT() {
         )}
       </div>
     </div>
-  )
-}    </div>
   )
 }
