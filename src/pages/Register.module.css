@@ -119,20 +119,18 @@
 .charCount { font-size: 0.75rem; color: var(--text-muted); text-align: right; }
 
 /* Team size buttons */
-.sizeGroup { display: flex; gap: 0.4rem; flex-wrap: nowrap; }
+.sizeGroup { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .sizeBtn {
-  padding: 0.3rem 0.65rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 50px;
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   color: var(--text-muted);
   cursor: pointer;
   font-family: 'Inter', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   transition: all 0.2s;
   white-space: nowrap;
-  flex: 1;
-  text-align: center;
 }
 .sizeBtn:hover { border-color: var(--neon-purple); color: var(--text); }
 .sizeBtnActive {
