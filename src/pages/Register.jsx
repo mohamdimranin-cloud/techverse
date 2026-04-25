@@ -30,8 +30,8 @@ export default function Register() {
     teamName: '',
     domain: '',
     college: '',
-    teamSize: 2,
-    members: [{ ...emptyMember }, { ...emptyMember }],
+    teamSize: 1,
+    members: [{ ...emptyMember }],
     projectTitle: '',
     projectDesc: '',
     agreeTerms: false,
@@ -187,7 +187,7 @@ export default function Register() {
                 <div className={styles.field}>
                   <label>Team Size *</label>
                   <div className={styles.sizeGroup}>
-                    {[2, 3, 4].map(n => (
+                    {[1, 2, 3, 4].map(n => (
                       <button key={n} type="button"
                         className={`${styles.sizeBtn} ${form.teamSize === n ? styles.sizeBtnActive : ''}`}
                         onClick={() => handleTeamSize(n)}>{n} Members</button>
