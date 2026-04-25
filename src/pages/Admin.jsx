@@ -554,7 +554,7 @@ export default function Admin() {
                       else showToast(`⚠️ ${data.error || 'Failed to send'}`, 'warn')
                     } catch (err) { showToast(`⚠️ ${err.message}`, 'warn') }
                   }}>
-                  Send Payment Request (₹499)
+                  Send Payment Request (₹549)
                 </button>
                 <div className={styles.statusBtns}>
                   {['pending', 'shortlisted', 'rejected'].map(s => (
