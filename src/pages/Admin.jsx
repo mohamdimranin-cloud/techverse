@@ -544,6 +544,7 @@ export default function Admin() {
                       const data = await sendPaymentRequest({
                         teamName: selected.teamName,
                         members: selected.members,
+                        registrationId: selected.id,
                       })
                       if (data.success) showToast(`Payment request sent to ${data.results.filter(r => r.status === 'sent').length} member(s)`, 'success')
                       else showToast(`⚠️ ${data.error || 'Failed to send'}`, 'warn')

@@ -81,10 +81,10 @@ app.post('/api/register', async (req, res) => {
   try {
     await client.query('BEGIN')
     const { rows } = await client.query(
-      `INSERT INTO registrations (ticket_id, team_name, domain, college, team_size, project_title, project_desc, txn_id, ppt_name, ppt_size, ppt_link)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+      `INSERT INTO registrations (ticket_id, team_name, domain, college, team_size, project_title, project_desc, txn_id, ppt_name, ppt_size, ppt_link, fee_amount)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
       [ticketId, teamName, domain, college, teamSize, projectTitle, projectDesc, txnId,
-       ppt?.name || null, ppt?.size || null, pptLink || null]
+       ppt?.name || null, ppt?.size || null, pptLink || null, 549]
     )
     const reg = rows[0]
     for (let i = 0; i < members.length; i++) {
@@ -361,17 +361,22 @@ app.post('/api/send-ticket', async (req, res) => {
 })
 
 app.post('/api/send-payment-request', requireAuth, async (req, res) => {
-  const { teamName, members } = req.body
+  const { teamName, members, registrationId } = req.body
   if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
 
+  // Fetch fee amount from DB — ₹499 for old registrations, ₹549 for new
+  let feeAmount = 549
+  if (registrationId) {
+    const { rows } = await pool.query(`SELECT fee_amount FROM registrations WHERE id=$1`, [registrationId])
+    if (rows[0]?.fee_amount) feeAmount = rows[0].fee_amount
+  }
+
   const UPI_ID = '7760543128@ibl'
-  const amount = 549
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Participation`
-  const qrData = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Participation`
-  const qrBase64 = await QRCode.toDataURL(qrData, { width: 400, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${feeAmount}&cu=INR&tn=TechVerse%202026%20Participation`
+  const qrBase64 = await QRCode.toDataURL(upiLink, { width: 400, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
   const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64')
 
-  const msg = `🎉 *Congratulations!*\n\nYour team *${teamName}* has been shortlisted for the next round.\n\nTo proceed, please complete the participation fee of *₹549* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nPlease send your successful payment screenshot to this number.\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
+  const msg = `🎉 *Congratulations!*\n\nYour team *${teamName}* has been shortlisted for the next round.\n\nTo proceed, please complete the participation fee of *₹${feeAmount}* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nPlease send your successful payment screenshot to this number.\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
 
   const results = []
   for (const m of members) {
@@ -381,7 +386,7 @@ app.post('/api/send-payment-request', requireAuth, async (req, res) => {
     const jid = `${p}@s.whatsapp.net`
     try {
       await sock.sendMessage(jid, { text: msg })
-      await sock.sendMessage(jid, { image: qrBuffer, caption: `Scan to pay ₹499 — TechVerse Round 2`, mimetype: 'image/png' })
+      await sock.sendMessage(jid, { image: qrBuffer, caption: `Scan to pay ₹${feeAmount} — TechVerse 2026 Participation Fee`, mimetype: 'image/png' })
       results.push({ name: m.name, status: 'sent' })
     } catch (e) {
       results.push({ name: m.name, status: 'failed', error: e.message })

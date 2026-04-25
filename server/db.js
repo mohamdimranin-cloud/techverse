@@ -29,6 +29,12 @@ async function initDB() {
     -- Add checkin_count to existing tables if missing
     ALTER TABLE registrations ADD COLUMN IF NOT EXISTS checkin_count INT DEFAULT 0;
 
+    -- Add fee_amount column — first 8 registrations are ₹499, new ones are ₹549
+    ALTER TABLE registrations ADD COLUMN IF NOT EXISTS fee_amount INT DEFAULT 549;
+    -- Set existing 8 registrations to ₹499
+    UPDATE registrations SET fee_amount = 499 WHERE fee_amount IS NULL OR fee_amount = 549
+      AND id IN (SELECT id FROM registrations ORDER BY registered_at ASC LIMIT 8);
+
     CREATE TABLE IF NOT EXISTS members (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       registration_id UUID REFERENCES registrations(id) ON DELETE CASCADE,
