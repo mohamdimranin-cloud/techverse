@@ -212,8 +212,9 @@ async function clearWASession() {
 }
 
 async function connectWhatsApp() {
-  const { state, saveCreds } = await useDBAuthState()
-  const { version } = await fetchLatestBaileysVersion()
+  try {
+    const { state, saveCreds } = await useDBAuthState()
+    const { version } = await fetchLatestBaileysVersion()
   sock = makeWASocket({
     version, auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, console) },
     browser: ['Ubuntu', 'Chrome', '22.04'],
@@ -249,8 +250,23 @@ async function connectWhatsApp() {
     if (connection === 'open') { isConnected = true; qrCodeData = null; retryCount = 0; console.log('✅ WhatsApp connected') }
   })
   sock.ev.on('creds.update', saveCreds)
+  } catch (err) {
+    console.error('connectWhatsApp error:', err.message)
+    if (err.message?.includes('authenticate') || err.message?.includes('decrypt') || err.message?.includes('cipher')) {
+      console.log('🗑️ Corrupted WA session — clearing and retrying in 3s...')
+      await clearWASession()
+      setTimeout(connectWhatsApp, 3000)
+    }
+  }
 }
-connectWhatsApp().catch(console.error)
+connectWhatsApp().catch(async (err) => {
+  console.error('WhatsApp initial connect failed:', err.message)
+  if (err.message?.includes('authenticate') || err.message?.includes('decrypt') || err.message?.includes('cipher')) {
+    console.log('🗑️ Corrupted WA session detected — clearing and retrying...')
+    await clearWASession()
+    connectWhatsApp().catch(console.error)
+  }
+})
 
 app.get('/api/status', (req, res) => res.json({ connected: isConnected, hasQr: !!qrCodeData }))
 
