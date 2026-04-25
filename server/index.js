@@ -379,6 +379,8 @@ app.post('/api/notify-status', requireAuth, async (req, res) => {
   if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
   const msgs = {
     'pending': `⏳ *Team ${teamName}* — Your registration is under review. Stay tuned!\n\n*Team TechVerse* ⚡`,
+    'payment pending': `💳 *Team ${teamName}* — Your participation fee of ₹549 is pending.\n\nPlease complete the payment to confirm your spot.\n\n*UPI ID:* 7760543128@ibl\n\nSend your payment screenshot to this number after paying.\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
+    'payment successful': `✅ *Team ${teamName}* — Your payment of ₹549 has been confirmed!\n\nYour participation is now confirmed for TechVerse Hackathon 2026.\n\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\nYour QR entry ticket will be sent shortly.\n\n*Team TechVerse* ⚡`,
     'shortlisted': `🎉 *Congratulations, Team ${teamName}!*\n\nYou've been *SHORTLISTED* for TechVerse Hackathon 2026! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\n━━━━━━━━━━━━━━━━━━\n💳 *Participation Fee Required*\n\nTo confirm your participation, please complete the fee:\n\n*Amount:* ₹549 (per team)\n*UPI ID:* 7760543128@ibl\n\nPay and send the transaction ID to this number to confirm your slot.\n━━━━━━━━━━━━━━━━━━\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
     'rejected': `😔 *Team ${teamName}* — Unfortunately your application was not selected this time. Thank you for participating!\n\n*Team TechVerse* ⚡`,
   }

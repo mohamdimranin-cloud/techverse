@@ -515,11 +515,6 @@ export default function Admin() {
                 ))}
               </div>
 
-              <div className={styles.detailSection}>
-                <h4>💳 Payment</h4>
-                <p>Transaction ID: <span style={{ color: 'var(--neon-cyan)', fontWeight: 600 }}>{selected.txnId || '—'}</span></p>
-              </div>
-
               {(selected.ppt || selected.ppt_link) && (
                 <div className={styles.detailSection}>
                   <h4>📊 Presentation</h4>
@@ -565,6 +560,49 @@ export default function Admin() {
                       {s}
                     </button>
                   ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                  <button
+                    className={`${styles.statusBtn} ${selected.status === 'payment pending' ? styles.statusBtnActive : ''}`}
+                    style={{ '--clr': '#fb923c', flex: 1 }}
+                    onClick={async () => {
+                      await updateRegistrationStatus(selected.id, 'payment pending')
+                      reload()
+                      setSelected(r => ({ ...r, status: 'payment pending' }))
+                      try {
+                        const data = await notifyStatus({
+                          teamName: selected.teamName,
+                          members: selected.members,
+                          domain: selected.domain,
+                          projectTitle: selected.projectTitle,
+                          status: 'payment pending',
+                        })
+                        showToast(data.success ? `Payment pending WA sent` : `⚠️ ${data.error}`, data.success ? 'success' : 'warn')
+                      } catch { showToast('⚠️ WA unreachable', 'warn') }
+                    }}>
+                    Payment Pending
+                  </button>
+                  <button
+                    className={`${styles.statusBtn} ${selected.status === 'payment successful' ? styles.statusBtnActive : ''}`}
+                    style={{ '--clr': '#22d3ee', flex: 1 }}
+                    onClick={async () => {
+                      await updateRegistrationStatus(selected.id, 'payment successful')
+                      reload()
+                      setSelected(r => ({ ...r, status: 'payment successful' }))
+                      try {
+                        const data = await notifyStatus({
+                          teamName: selected.teamName,
+                          members: selected.members,
+                          domain: selected.domain,
+                          projectTitle: selected.projectTitle,
+                          status: 'payment successful',
+                        })
+                        showToast(data.success ? `Payment confirmed WA sent` : `⚠️ ${data.error}`, data.success ? 'success' : 'warn')
+                      } catch { showToast('⚠️ WA unreachable', 'warn') }
+                    }}>
+                    Payment Successful
+                  </button>
                 </div>
               </div>
 
