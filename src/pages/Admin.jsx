@@ -171,6 +171,7 @@ export default function Admin() {
             domain: reg.domain,
             projectTitle: reg.project_title || reg.projectTitle,
             status,
+            feeAmount: reg.fee_amount || 549,
           })
           if (data.success) {
             showToast(`✅ WhatsApp sent to ${data.results.filter(r => r.status === 'sent').length} member(s)`, 'success')
@@ -550,7 +551,7 @@ export default function Admin() {
                       else showToast(`⚠️ ${data.error || 'Failed to send'}`, 'warn')
                     } catch (err) { showToast(`⚠️ ${err.message}`, 'warn') }
                   }}>
-                  Send Payment Request (₹549)
+                  Send Payment Request (₹{selected.fee_amount || 549})
                 </button>
                 <div className={styles.statusBtns}>
                   {['pending', 'shortlisted', 'rejected'].map(s => (
@@ -578,6 +579,7 @@ export default function Admin() {
                           domain: selected.domain,
                           projectTitle: selected.projectTitle,
                           status: 'payment pending',
+                          feeAmount: selected.fee_amount || 549,
                         })
                         showToast(data.success ? `Payment pending WA sent` : `⚠️ ${data.error}`, data.success ? 'success' : 'warn')
                       } catch { showToast('⚠️ WA unreachable', 'warn') }
@@ -598,6 +600,7 @@ export default function Admin() {
                           domain: selected.domain,
                           projectTitle: selected.projectTitle,
                           status: 'payment successful',
+                          feeAmount: selected.fee_amount || 549,
                         })
                         showToast(data.success ? `Payment confirmed WA sent` : `⚠️ ${data.error}`, data.success ? 'success' : 'warn')
                       } catch { showToast('⚠️ WA unreachable', 'warn') }
