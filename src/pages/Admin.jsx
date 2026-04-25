@@ -306,8 +306,6 @@ export default function Admin() {
     pending: registrations.filter(r => r.status === 'pending').length,
     shortlisted: registrations.filter(r => r.status === 'shortlisted').length,
     rejected: registrations.filter(r => r.status === 'rejected').length,
-    paymentPending: registrations.filter(r => r.status === 'payment pending').length,
-    paymentSuccess: registrations.filter(r => r.status === 'payment successful').length,
     withPpt: registrations.filter(r => r.ppt).length,
   }), [registrations])
 
@@ -386,8 +384,6 @@ export default function Admin() {
           {[
             { label: 'Total Teams', val: stats.total, clr: '#a855f7' },
             { label: 'Pending', val: stats.pending, clr: '#f59e0b' },
-            { label: 'Pay Pending', val: stats.paymentPending, clr: '#fb923c' },
-            { label: 'Pay Success', val: stats.paymentSuccess, clr: '#22d3ee' },
             { label: 'Shortlisted', val: stats.shortlisted, clr: '#10b981' },
             { label: 'Rejected', val: stats.rejected, clr: '#f87171' },
             { label: 'PPT Uploaded', val: stats.withPpt, clr: '#38bdf8' },
@@ -412,7 +408,7 @@ export default function Admin() {
             {domains.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={styles.select}>
-            {['All', 'pending', 'payment pending', 'payment successful', 'shortlisted', 'rejected'].map(s => (
+            {['All', 'pending', 'shortlisted', 'rejected'].map(s => (
               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
           </select>
@@ -561,7 +557,7 @@ export default function Admin() {
                   Send Payment Request (₹499)
                 </button>
                 <div className={styles.statusBtns}>
-                  {['pending', 'payment pending', 'payment successful', 'shortlisted', 'rejected'].map(s => (
+                  {['pending', 'shortlisted', 'rejected'].map(s => (
                     <button key={s}
                       className={`${styles.statusBtn} ${selected.status === s ? styles.statusBtnActive : ''}`}
                       style={{ '--clr': STATUS_COLORS[s] }}

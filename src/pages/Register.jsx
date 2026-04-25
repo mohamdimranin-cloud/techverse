@@ -10,12 +10,8 @@ const DOMAINS = [
   { theme: 'Future Tech', options: ['Cybersecurity', 'Energy Conservation & Digitization'] },
 ]
 
-const UPI_ID = '7760543128@ibl'
-const UPI_NAME = 'TechVerse Hackathon'
-const FEE_PER_PERSON = 50
-
 const emptyMember = { name: '', email: '', phone: '', role: '' }
-const STEPS = ['Team Info', 'Members', 'Project', 'Payment']
+const STEPS = ['Team Info', 'Members', 'Project']
 
 export default function Register() {
   const navigate = useNavigate()
@@ -23,8 +19,7 @@ export default function Register() {
   const [errors, setErrors] = useState({})
   const [pptFile, setPptFile] = useState(null)
   const [pptError, setPptError] = useState('')
-  const [pptMode, setPptMode] = useState('upload') // 'upload' | 'link'
-  const [txnId, setTxnId] = useState('')
+  const [pptMode, setPptMode] = useState('upload')
 
   const [form, setForm] = useState({
     teamName: '',
@@ -90,9 +85,6 @@ export default function Register() {
       if (form.projectDesc.trim().length < 50) e.projectDesc = 'Describe your project (min 50 chars)'
       if (!form.agreeTerms) e.agreeTerms = 'You must agree to the terms'
     }
-    if (step === 4) {
-      if (!txnId.trim()) e.txnId = 'Please enter your UPI transaction ID after payment'
-    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -109,7 +101,6 @@ export default function Register() {
 
     const result = await submitRegistration({
       ...form,
-      txnId,
       ppt: pptFile ? { name: pptFile.name, size: pptFile.size } : null,
       pptLink: form.pptLink || null,
     })
@@ -127,7 +118,7 @@ export default function Register() {
     if (pptFile && pptMode === 'upload') {
       uploadPptToCloudinary(pptFile, result.id).catch(err => console.error('PPT upload failed:', err.message))
     }
-    notifyRegistration({ teamName: form.teamName, members: form.members, domain: form.domain, projectTitle: form.projectTitle, txnId, ticketId: result.ticketId, hasPpt: !!(pptFile || form.pptLink) })
+    notifyRegistration({ teamName: form.teamName, members: form.members, domain: form.domain, projectTitle: form.projectTitle, ticketId: result.ticketId, hasPpt: !!(pptFile || form.pptLink) })
   }
 
   return (
@@ -419,8 +410,8 @@ export default function Register() {
 
             <div className={styles.nav}>
               {step > 1 && <button type="button" className="btn btn-outline" onClick={back}>← Back</button>}
-              {step < 4 && <button type="button" className="btn btn-primary" onClick={next}>Next →</button>}
-              {step === 4 && <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Registration'}</button>}
+              {step < 3 && <button type="button" className="btn btn-primary" onClick={next}>Next →</button>}
+              {step === 3 && <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Registration'}</button>}
             </div>
           </div>
         </form>

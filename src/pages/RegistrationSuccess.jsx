@@ -15,7 +15,7 @@ export default function RegistrationSuccess() {
         <h1 className={styles.title}>You're In the TechVerse!</h1>
         <p className={styles.team}>{teamName}</p>
         <p className={styles.msg}>
-          Round 1 payment is under verification. After shortlisting, a payment request of ₹499 will be sent via WhatsApp. Once the payment is confirmed, your QR code ticket will be issued.
+          Registration is free. If shortlisted, a payment request of ₹549 will be sent via WhatsApp. Once confirmed, your QR code entry ticket will be issued.
         </p>
 
         {ticketId && (
@@ -35,10 +35,10 @@ export default function RegistrationSuccess() {
         )}
 
         <div className={styles.steps}>
-          <div className={styles.step}><span></span><p>Round 1 — ₹50/head registration fee paid</p></div>
-          <div className={styles.step}><span></span><p>Payment verification in progress</p></div>
-          <div className={styles.step}><span></span><p>If shortlisted, Round 2 payment request (₹499/team) sent via WhatsApp</p></div>
-          <div className={styles.step}><span></span><p>QR entry ticket sent after Round 2 payment confirmed</p></div>
+          <div className={styles.step}><span></span><p>Registration submitted successfully</p></div>
+          <div className={styles.step}><span></span><p>Team will be reviewed and shortlisted</p></div>
+          <div className={styles.step}><span></span><p>If shortlisted, ₹549 payment request sent via WhatsApp</p></div>
+          <div className={styles.step}><span></span><p>QR entry ticket issued after payment confirmed</p></div>
           <div className={styles.step}><span></span><p>9 & 10 May 2026 — Bearys Institute of Technology</p></div>
         </div>
 

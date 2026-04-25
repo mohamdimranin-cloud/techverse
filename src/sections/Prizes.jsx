@@ -78,18 +78,18 @@ export default function Prizes() {
           <h3 className={styles.feeTitle}>Fee Structure</h3>
           <div className={styles.feeGrid}>
             <div className={`glass-card ${styles.feeCard}`}>
-              <span className={styles.feeRound}>Round 1</span>
-              <p className={styles.feeName}>Registration Fee</p>
-              <p className={styles.feeAmount}>₹50 <span>/ per head</span></p>
+              <span className={styles.feeRound}>Registration</span>
+              <p className={styles.feeName}>Free to Register</p>
+              <p className={styles.feeAmount}>₹0 <span>/ per team</span></p>
             </div>
             <div className={`glass-card ${styles.feeCard}`}>
-              <span className={styles.feeRound}>Round 2</span>
-              <p className={styles.feeName}>After Shortlisting</p>
-              <p className={styles.feeAmount}>₹499 <span>/ per team</span></p>
+              <span className={styles.feeRound}>After Shortlisting</span>
+              <p className={styles.feeName}>Participation Fee</p>
+              <p className={styles.feeAmount}>₹549 <span>/ per team</span></p>
             </div>
           </div>
           <p className={styles.feeNote}>
-            After shortlisting, a payment request of ₹499 will be sent via WhatsApp. Once confirmed, your QR code ticket will be issued.
+            Registration is free. After shortlisting, a payment request of ₹549 will be sent via WhatsApp. Once confirmed, your QR code ticket will be issued.
           </p>
         </div>
 

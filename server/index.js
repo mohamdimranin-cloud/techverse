@@ -309,7 +309,7 @@ app.post('/api/notify-registration', async (req, res) => {
     ? `\n\n📎 *Upload your PPT here:*\nhttps://bit-techverse.netlify.app/upload/${ticketId}`
     : ''
 
-  const msg = `✅ *Registration Confirmed!*\n\nHey Team *${teamName}*, your registration for *TechVerse Hackathon 2026* is complete! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n💳 *Transaction ID:* ${txnId || 'N/A'}\n🎫 *Registration ID:* ${ticketId || 'N/A'}${uploadLine}\n\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\nThank you for registering. Your payment is under verification.\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`
+  const msg = `✅ *Registration Confirmed!*\n\nHey Team *${teamName}*, your registration for *TechVerse Hackathon 2026* is complete! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n🎫 *Registration ID:* ${ticketId || 'N/A'}${uploadLine}\n\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\nRegistration is free. If shortlisted, you'll receive a payment request of ₹549 to confirm your spot.\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`
   const results = []
   for (const m of members) {
     try { await sendWA(m.phone, msg); results.push({ name: m.name, status: 'sent' }) }
@@ -349,13 +349,13 @@ app.post('/api/send-payment-request', requireAuth, async (req, res) => {
   if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
 
   const UPI_ID = '7760543128@ibl'
-  const amount = 499
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Round%202`
-  const qrData = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Round%202`
+  const amount = 549
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Participation`
+  const qrData = `upi://pay?pa=${UPI_ID}&pn=TechVerse%20Hackathon&am=${amount}&cu=INR&tn=TechVerse%202026%20Participation`
   const qrBase64 = await QRCode.toDataURL(qrData, { width: 400, margin: 2, color: { dark: '#000000', light: '#ffffff' } })
   const qrBuffer = Buffer.from(qrBase64.split(',')[1], 'base64')
 
-  const msg = `🎉 *Congratulations!*\n\nYour team *${teamName}* has been shortlisted for the next round.\n\nTo proceed, please complete the Round 2 payment of *₹499* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nPlease send your successful payment screenshot to this number.\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
+  const msg = `🎉 *Congratulations!*\n\nYour team *${teamName}* has been shortlisted for the next round.\n\nTo proceed, please complete the participation fee of *₹549* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nPlease send your successful payment screenshot to this number.\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
 
   const results = []
   for (const m of members) {
@@ -379,9 +379,7 @@ app.post('/api/notify-status', requireAuth, async (req, res) => {
   if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
   const msgs = {
     'pending': `⏳ *Team ${teamName}* — Your registration is under review. Stay tuned!\n\n*Team TechVerse* ⚡`,
-    'payment pending': `💳 *Team ${teamName}* — Your payment is pending. Please complete it to confirm your spot.\n\n📌 ${domain} | 💡 ${projectTitle}\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
-    'payment successful': `✅ *Team ${teamName}* — Payment confirmed! Registration complete.\n\n📌 ${domain} | 💡 ${projectTitle}\n\n*Team TechVerse* ⚡`,
-    'shortlisted': `🎉 *Congratulations, Team ${teamName}!*\n\nYou've been *SHORTLISTED* for TechVerse Hackathon 2026! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\n━━━━━━━━━━━━━━━━━━\n💳 *Round 2 Payment Required*\n\nTo confirm your participation, please complete the Round 2 fee:\n\n*Amount:* ₹499 (per team)\n*UPI ID:* 7760543128@ibl\n\nPay and send the transaction ID to this number to confirm your slot.\n━━━━━━━━━━━━━━━━━━\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
+    'shortlisted': `🎉 *Congratulations, Team ${teamName}!*\n\nYou've been *SHORTLISTED* for TechVerse Hackathon 2026! 🚀\n\n📌 *Domain:* ${domain}\n💡 *Project:* ${projectTitle}\n📅 9 & 10 May 2026\n📍 Bearys Institute of Technology, Mangalore\n\n━━━━━━━━━━━━━━━━━━\n💳 *Participation Fee Required*\n\nTo confirm your participation, please complete the fee:\n\n*Amount:* ₹549 (per team)\n*UPI ID:* 7760543128@ibl\n\nPay and send the transaction ID to this number to confirm your slot.\n━━━━━━━━━━━━━━━━━━\n\n📧 techverse@bitmangalore.edu.in\n\n*Team TechVerse* ⚡`,
     'rejected': `😔 *Team ${teamName}* — Unfortunately your application was not selected this time. Thank you for participating!\n\n*Team TechVerse* ⚡`,
   }
   const message = msgs[status] || `📢 *Team ${teamName}* — Status updated to *${status}*.\n\n*Team TechVerse* ⚡`
