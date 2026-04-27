@@ -81,8 +81,6 @@ export default function Register() {
       })
     }
     if (step === 3) {
-      if (!form.projectTitle.trim()) e.projectTitle = 'Project title is required'
-      if (form.projectDesc.trim().length < 50) e.projectDesc = 'Describe your project (min 50 chars)'
       if (!form.agreeTerms) e.agreeTerms = 'You must agree to the terms'
     }
     setErrors(e)
@@ -237,14 +235,14 @@ export default function Register() {
               <div className={styles.stepContent}>
                 <h2 className={styles.stepTitle}>Project Details</h2>
                 <div className={styles.field}>
-                  <label>Project Title *</label>
+                  <label>Project Title <span className={styles.hint}>(optional)</span></label>
                   <input type="text" placeholder="Give your project a name"
                     value={form.projectTitle} onChange={e => set('projectTitle', e.target.value)}
                     className={errors.projectTitle ? styles.inputError : ''} />
                   {errors.projectTitle && <span className={styles.error}>{errors.projectTitle}</span>}
                 </div>
                 <div className={styles.field}>
-                  <label>Project Description * <span className={styles.hint}>(min 50 chars)</span></label>
+                  <label>Project Description <span className={styles.hint}>(optional)</span></label>
                   <textarea rows={4} placeholder="Describe your idea, the problem it solves, and your approach..."
                     value={form.projectDesc} onChange={e => set('projectDesc', e.target.value)}
                     className={errors.projectDesc ? styles.inputError : ''} />
