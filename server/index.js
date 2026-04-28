@@ -259,14 +259,6 @@ async function connectWhatsApp() {
     }
   }
 }
-connectWhatsApp().catch(async (err) => {
-  console.error('WhatsApp initial connect failed:', err.message)
-  if (err.message?.includes('authenticate') || err.message?.includes('decrypt') || err.message?.includes('cipher')) {
-    console.log('🗑️ Corrupted WA session detected — clearing and retrying...')
-    await clearWASession()
-    connectWhatsApp().catch(console.error)
-  }
-})
 
 app.get('/api/status', (req, res) => res.json({ connected: isConnected, hasQr: !!qrCodeData }))
 
@@ -426,7 +418,18 @@ setInterval(() => {
 // ── Start ─────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001
 initDB().then(() => {
-  app.listen(PORT, () => console.log(`🚀 TechVerse API → http://localhost:${PORT}`))
+  app.listen(PORT, () => {
+    console.log(`🚀 TechVerse API → http://localhost:${PORT}`)
+    // Start WA after server is listening — crash won't kill the server
+    connectWhatsApp().catch(async (err) => {
+      console.error('WhatsApp initial connect failed:', err.message)
+      if (err.message?.includes('authenticate') || err.message?.includes('decrypt') || err.message?.includes('cipher')) {
+        console.log('🗑️ Corrupted WA session — clearing and retrying...')
+        await clearWASession()
+        connectWhatsApp().catch(console.error)
+      }
+    })
+  })
 }).catch(err => { console.error('DB init failed:', err); process.exit(1) })
 
 // Cloudinary config (added after imports)
