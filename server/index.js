@@ -73,10 +73,50 @@ app.post('/api/login', async (req, res) => {
   res.json({ token })
 })
 
+// ── Rate limiting for registration ───────────────────────────
+const registrationAttempts = new Map()
+
+function registrationRateLimit(req, res, next) {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress
+  const now = Date.now()
+  const windowMs = 60 * 60 * 1000 // 1 hour
+  const maxAttempts = 3
+
+  const record = registrationAttempts.get(ip) || { count: 0, resetAt: now + windowMs }
+
+  if (now > record.resetAt) {
+    record.count = 0
+    record.resetAt = now + windowMs
+  }
+
+  if (record.count >= maxAttempts) {
+    return res.status(429).json({ error: 'Too many registration attempts. Please try again later.' })
+  }
+
+  record.count++
+  registrationAttempts.set(ip, record)
+  next()
+}
+
 // ── Registrations ─────────────────────────────────────────────
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', registrationRateLimit, async (req, res) => {
   const { teamName, domain, college, teamSize, members, projectTitle, projectDesc, txnId, ppt, pptLink } = req.body
   const ticketId = `TV2026-${Math.random().toString(36).substring(2,7).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
+
+  // Block duplicate phone numbers
+  if (members?.length) {
+    const phones = members.map(m => m.phone).filter(Boolean)
+    if (phones.length) {
+      const { rows: existing } = await pool.query(
+        `SELECT m.phone FROM members m WHERE m.phone = ANY($1)`,
+        [phones]
+      )
+      if (existing.length > 0) {
+        return res.status(409).json({ error: `Phone number ${existing[0].phone} is already registered.` })
+      }
+    }
+  }
+
   const client = await pool.connect()
   try {
     await client.query('BEGIN')

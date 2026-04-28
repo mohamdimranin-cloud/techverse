@@ -87,10 +87,11 @@ export default function Register() {
     return Object.keys(e).length === 0
   }
 
-  const next = () => { if (validateStep()) setStep(s => s + 1) }
-  const back = () => setStep(s => s - 1)
+  const next = () => { if (validateStep()) { setSubmitError(''); setStep(s => s + 1) } }
+  const back = () => { setSubmitError(''); setStep(s => s - 1) }
 
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -104,7 +105,7 @@ export default function Register() {
     })
 
     if (!result.id) {
-      alert('Registration failed. Please try again.')
+      setSubmitError(result.error || 'Registration failed. Please try again.')
       setSubmitting(false)
       return
     }
@@ -407,6 +408,15 @@ export default function Register() {
             )}
 
             <div className={styles.nav}>
+              {submitError && (
+                <div style={{
+                  width: '100%', padding: '0.75rem 1rem',
+                  background: 'rgba(248,113,113,0.1)', border: '1px solid #f87171',
+                  borderRadius: '10px', color: '#f87171', fontSize: '0.88rem', textAlign: 'center'
+                }}>
+                  {submitError}
+                </div>
+              )}
               {step > 1 && <button type="button" className="btn btn-outline" onClick={back}>← Back</button>}
               {step < 3 && <button type="button" className="btn btn-primary" onClick={next}>Next →</button>}
               {step === 3 && <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Registration'}</button>}
