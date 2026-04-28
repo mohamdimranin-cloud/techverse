@@ -430,6 +430,6 @@ initDB().then(() => {
       }
     })
   })
-}).catch(err => { console.error('DB init failed:', err); process.exit(1) })
+}).catch(err => { console.error('DB init failed:', err.message) })
 
 // Cloudinary config (added after imports)
