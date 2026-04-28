@@ -1,4 +1,13 @@
 require('dotenv').config()
+
+// Prevent WA crypto errors from crashing the server
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.message)
+})
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason?.message || reason)
+})
+
 const express = require('express')
 const cors = require('cors')
 const bcrypt = require('bcryptjs')
