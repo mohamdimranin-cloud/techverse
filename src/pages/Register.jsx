@@ -122,6 +122,31 @@ export default function Register() {
 
   return (
     <div className={styles.page}>
+
+      {/* Error Modal */}
+      {submitError && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.7)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        }}>
+          <div className="glass-card" style={{
+            maxWidth: '380px', width: '100%', padding: '2rem',
+            textAlign: 'center', borderColor: 'rgba(248,113,113,0.4)'
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+            <h3 style={{ color: '#f87171', marginBottom: '0.5rem' }}>Already Registered</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              {submitError}
+            </p>
+            <button className="btn btn-primary" style={{ width: '100%' }}
+              onClick={() => setSubmitError('')}>
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.container}>
         <div className={styles.header}>
           <p className="section-tag">Join the Universe</p>
@@ -408,15 +433,6 @@ export default function Register() {
             )}
 
             <div className={styles.nav}>
-              {submitError && (
-                <div style={{
-                  width: '100%', padding: '0.75rem 1rem',
-                  background: 'rgba(248,113,113,0.1)', border: '1px solid #f87171',
-                  borderRadius: '10px', color: '#f87171', fontSize: '0.88rem', textAlign: 'center'
-                }}>
-                  {submitError}
-                </div>
-              )}
               {step > 1 && <button type="button" className="btn btn-outline" onClick={back}>← Back</button>}
               {step < 3 && <button type="button" className="btn btn-primary" onClick={next}>Next →</button>}
               {step === 3 && <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Registration'}</button>}
