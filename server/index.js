@@ -26,7 +26,7 @@ const { Boom } = require('@hapi/boom')
 
 const app = express()
 app.use(cors())
-app.options('*', cors())
+app.options('/{*path}', cors())
 app.use(express.json({ limit: '100mb' }))
 
 // Cloudinary config
