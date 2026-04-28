@@ -54,9 +54,10 @@ export default function Register() {
     setPptError('')
     if (!file) return
     const allowed = ['application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation']
-    if (!allowed.includes(file.type) && !file.name.match(/\.(ppt|pptx)$/i)) {
-      setPptError('Only .ppt or .pptx files are allowed')
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/pdf']
+    if (!allowed.includes(file.type) && !file.name.match(/\.(ppt|pptx|pdf)$/i)) {
+      setPptError('Only .ppt, .pptx or .pdf files are allowed')
       setPptFile(null); return
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -296,7 +297,7 @@ export default function Register() {
                     <>
                       <p className={styles.pptNote}>Max file size: <strong>10MB</strong>. Files above 10MB will be rejected.</p>
                       <label className={`${styles.uploadBox} ${pptFile ? styles.uploadDone : ''}`}>
-                        <input type="file" accept=".ppt,.pptx" onChange={handlePpt} style={{ display: 'none' }} />
+                        <input type="file" accept=".ppt,.pptx,.pdf" onChange={handlePpt} style={{ display: 'none' }} />
                         {pptFile ? (
                           <div className={styles.uploadedFile}>
                             <span></span>
