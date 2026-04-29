@@ -34,6 +34,8 @@ export default function Admin() {
   const [confirmDelete, setConfirmDelete] = useState(null)
 
   const [activeTab, setActiveTab] = useState('registrations')
+  const [deadlineInput, setDeadlineInput] = useState('')
+  const [deadlineSaved, setDeadlineSaved] = useState(false)
   const [toast, setToast] = useState(null)
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type })
@@ -64,6 +66,9 @@ export default function Admin() {
   useEffect(() => {
     if (authed) {
       reload()
+      // Load current deadline
+      fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/settings/deadline`)
+        .then(r => r.json()).then(d => { if (d.deadline) setDeadlineInput(d.deadline.slice(0,16)) }).catch(() => {})
       // Poll registrations every 10 seconds for live updates
       const regInterval = setInterval(reload, 10000)
 
@@ -356,11 +361,41 @@ export default function Admin() {
             onClick={() => setActiveTab('ppt')}>📊 PPT</button>
           <button className={`${styles.tab} ${activeTab === 'sponsors' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('sponsors')}>🤝 Sponsors</button>
+          <button className={`${styles.tab} ${activeTab === 'settings' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('settings')}>⚙️ Settings</button>
         </div>
 
         {activeTab === 'sponsors' && <AdminSponsors />}
         {activeTab === 'checkin' && <AdminCheckin />}
         {activeTab === 'ppt' && <AdminPPT />}
+
+        {activeTab === 'settings' && (
+          <div className={`glass-card`} style={{ maxWidth: 480, padding: '2rem', marginTop: '1rem' }}>
+            <h3 style={{ marginBottom: '1.5rem', color: 'var(--neon-cyan)' }}>Registration Deadline</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input
+                type="datetime-local"
+                value={deadlineInput}
+                onChange={e => { setDeadlineInput(e.target.value); setDeadlineSaved(false) }}
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 10, padding: '0.75rem 1rem', color: 'var(--text)', fontSize: '0.95rem' }}
+              />
+              <button className="btn btn-primary" onClick={async () => {
+                try {
+                  const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/settings/deadline`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                    body: JSON.stringify({ deadline: deadlineInput })
+                  })
+                  const data = await res.json()
+                  if (data.success) { setDeadlineSaved(true); showToast('Deadline updated!', 'success') }
+                } catch { showToast('Failed to update deadline', 'warn') }
+              }}>
+                Save Deadline
+              </button>
+              {deadlineSaved && <p style={{ color: '#10b981', fontSize: '0.85rem' }}>Saved — countdown will update on the website.</p>}
+            </div>
+          </div>
+        )}
 
         {activeTab === 'registrations' && (<>
         {/* Stats */}

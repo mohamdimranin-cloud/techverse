@@ -51,6 +51,14 @@ async function initDB() {
       image_data TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
+    INSERT INTO settings (key, value) VALUES ('registration_deadline', '2026-04-29T23:59:59')
+      ON CONFLICT (key) DO NOTHING;
   `)
   console.log('✅ Database tables ready')
 }

@@ -216,6 +216,19 @@ app.post('/api/checkin', requireAuth, async (req, res) => {
   })
 })
 
+// ── Settings ──────────────────────────────────────────────────
+app.get('/api/settings/deadline', async (req, res) => {
+  const { rows } = await pool.query(`SELECT value FROM settings WHERE key='registration_deadline'`)
+  res.json({ deadline: rows[0]?.value || '2026-04-29T23:59:59' })
+})
+
+app.patch('/api/settings/deadline', requireAuth, async (req, res) => {
+  const { deadline } = req.body
+  await pool.query(`INSERT INTO settings (key, value) VALUES ('registration_deadline', $1)
+    ON CONFLICT (key) DO UPDATE SET value=$1`, [deadline])
+  res.json({ success: true, deadline })
+})
+
 // ── Sponsors ──────────────────────────────────────────────────
 app.get('/api/sponsors', async (req, res) => {
   const { rows } = await pool.query(`SELECT id, name, image_data FROM sponsors ORDER BY created_at`)

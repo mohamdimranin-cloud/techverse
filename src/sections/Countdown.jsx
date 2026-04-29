@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Countdown.module.css'
 
-const DEADLINE = new Date('2026-04-29T23:59:59')
+const BASE = import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'
 
-function getTimeLeft() {
-  const diff = DEADLINE - new Date()
+function getTimeLeft(deadline) {
+  const diff = new Date(deadline) - new Date()
   if (diff <= 0) return null
   return {
     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -15,13 +15,27 @@ function getTimeLeft() {
   }
 }
 
+function formatDate(iso) {
+  const d = new Date(iso)
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
 export default function Countdown() {
-  const [time, setTime] = useState(getTimeLeft())
+  const [deadline, setDeadline] = useState('2026-04-29T23:59:59')
+  const [time, setTime] = useState(null)
 
   useEffect(() => {
-    const t = setInterval(() => setTime(getTimeLeft()), 1000)
-    return () => clearInterval(t)
+    fetch(`${BASE}/api/settings/deadline`)
+      .then(r => r.json())
+      .then(d => { if (d.deadline) setDeadline(d.deadline) })
+      .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    setTime(getTimeLeft(deadline))
+    const t = setInterval(() => setTime(getTimeLeft(deadline)), 1000)
+    return () => clearInterval(t)
+  }, [deadline])
 
   return (
     <section className={styles.section}>
@@ -37,13 +51,13 @@ export default function Countdown() {
                 </div>
               ))}
             </div>
-            <p className={styles.date}>Deadline: 29 April 2026</p>
+            <p className={styles.date}>Deadline: {formatDate(deadline)}</p>
             <Link to="/register" className="btn btn-primary">Register Before It's Too Late</Link>
           </>
         ) : (
           <>
             <p className={styles.label}>Registration Closed</p>
-            <p className={styles.date}>Registration ended on 29 April 2026</p>
+            <p className={styles.date}>Registration ended on {formatDate(deadline)}</p>
           </>
         )}
       </div>
