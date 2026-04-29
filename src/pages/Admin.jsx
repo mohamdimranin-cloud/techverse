@@ -194,52 +194,25 @@ export default function Admin() {
 
   const exportExcel = async () => {
     const all = registrations
-    const zip = new JSZip()
-    const pptFolder = zip.folder('PPT_Files')
-    let pptCount = 0
     const rows = []
     for (const r of all) {
       const teamName = r.team_name || r.teamName
-      const domain = r.domain
-      const college = r.college
-      const pptName = r.ppt_name || r.ppt?.name
-      let pptStatus = pptName || 'Not uploaded'
-      if (pptName) {
-        try {
-          const pptData = await downloadPptAPI(r.id)
-          if (pptData?.url) {
-            // Cloudinary URL — fetch the file
-            const res = await fetch(pptData.url)
-            if (res.ok) {
-              const arrayBuf = await res.arrayBuffer()
-              pptFolder.file(`${teamName}_${pptName}`, arrayBuf)
-              pptCount++
-            } else {
-              pptStatus = 'Download failed'
-            }
-          } else if (pptData?.data) {
-            // Legacy base64
-            const base64 = pptData.data.includes(',') ? pptData.data.split(',')[1] : pptData.data
-            const binary = atob(base64)
-            const bytes = new Uint8Array(binary.length)
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
-            pptFolder.file(`${teamName}_${pptName}`, bytes)
-            pptCount++
-          }
-        } catch (e) { pptStatus = 'Error: ' + e.message }
-      }
       const members = r.members || []
       members.forEach((m, j) => {
         rows.push({
-          'Team Name': teamName, 'Domain': domain, 'College': college,
+          'Team Name': teamName,
+          'Domain': r.domain,
+          'College': r.college,
           'Team Size': r.team_size || r.teamSize,
           'Member Role': j === 0 ? 'Leader' : `Member ${j + 1}`,
           'Full Name': m.name, 'Email': m.email, 'Phone': m.phone, 'Skill/Role': m.role,
-          'Project Title': r.project_title || r.projectTitle,
-          'Project Description': r.project_desc || r.projectDesc,
-          'Status': r.status, 'Transaction ID': r.txn_id || r.txnId || '',
+          'Project Title': r.project_title || r.projectTitle || '',
+          'Project Description': r.project_desc || r.projectDesc || '',
+          'Status': r.status,
           'Ticket ID': r.ticket_id || r.ticketId || '',
-          'PPT File': pptStatus,
+          'Fee Amount': r.fee_amount || 549,
+          'PPT/PDF File': r.ppt_name || r.ppt?.name || '',
+          'PPT/PDF URL': r.ppt_url || '',
           'PPT Link': r.ppt_link || '',
           'Registered At': new Date(r.registered_at || r.registeredAt).toLocaleString(),
         })
@@ -249,43 +222,38 @@ export default function Admin() {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Registrations')
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    zip.file(`TechVerse_Registrations_${new Date().toISOString().slice(0,10)}.xlsx`, excelBuffer)
-    const zipBlob = await zip.generateAsync({ type: 'blob' })
-    const url = URL.createObjectURL(zipBlob)
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `TechVerse_Export_${new Date().toISOString().slice(0,10)}.zip`
+    a.download = `TechVerse_Registrations_${new Date().toISOString().slice(0,10)}.xlsx`
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    showToast(`✅ Exported ${all.length} teams + ${pptCount} PPT files`, 'success')
+    showToast(`Exported ${all.length} teams`, 'success')
   }
 
   const downloadPpt = async (reg) => {
     try {
       const data = await downloadPptAPI(reg.id)
       if (!data || (!data.url && !data.data)) {
-        alert('No PPT uploaded for this team.')
+        showToast('No file uploaded for this team.', 'warn')
         return
       }
       if (data.url) {
-        const res = await fetch(data.url)
-        const blob = await res.blob()
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = data.name || reg.ppt?.name || 'presentation.pptx'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        // Open Cloudinary URL directly — avoids CORS fetch issues
+        window.open(data.url, '_blank')
       } else if (data.data) {
         const a = document.createElement('a')
         a.href = data.data
-        a.download = data.name
+        a.download = data.name || 'presentation'
+        document.body.appendChild(a)
         a.click()
+        document.body.removeChild(a)
       }
     } catch (e) {
-      alert('Download failed: ' + e.message)
+      showToast('Download failed: ' + e.message, 'warn')
     }
   }
 
