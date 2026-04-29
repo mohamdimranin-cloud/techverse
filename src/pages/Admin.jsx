@@ -194,7 +194,20 @@ export default function Admin() {
 
   const exportExcel = async () => {
     const all = registrations
-    const rows = all.map(r => {
+
+    const themeMap = {
+      'Agritech': 'Rural Tech',
+      'Fisheries & Coastal Solutions': 'Rural Tech',
+      'Health Technology': 'MedTech',
+      'Cybersecurity': 'Future Tech',
+      'Energy Conservation & Digitization': 'Future Tech',
+    }
+
+    const themes = ['Rural Tech', 'MedTech', 'Future Tech']
+    const grouped = { 'Rural Tech': [], 'MedTech': [], 'Future Tech': [] }
+
+    all.forEach(r => {
+      const theme = themeMap[r.domain] || 'Rural Tech'
       const members = r.members || []
       const row = {
         'Team Name': r.team_name || r.teamName,
@@ -215,11 +228,15 @@ export default function Admin() {
         row[`${label} Phone`] = m.phone || ''
         row[`${label} Role`] = m.role || ''
       })
-      return row
+      grouped[theme].push(row)
     })
-    const ws = XLSX.utils.json_to_sheet(rows)
+
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Registrations')
+    themes.forEach(theme => {
+      const ws = XLSX.utils.json_to_sheet(grouped[theme].length ? grouped[theme] : [{ 'Team Name': 'No registrations yet' }])
+      XLSX.utils.book_append_sheet(wb, ws, theme)
+    })
+
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
     const url = URL.createObjectURL(blob)
@@ -230,7 +247,7 @@ export default function Admin() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    showToast(`Exported ${all.length} teams`, 'success')
+    showToast(`Exported ${all.length} teams across 3 themes`, 'success')
   }
 
   const downloadPpt = async (reg) => {
