@@ -194,30 +194,29 @@ export default function Admin() {
 
   const exportExcel = async () => {
     const all = registrations
-    const rows = []
-    for (const r of all) {
-      const teamName = r.team_name || r.teamName
+    const rows = all.map(r => {
       const members = r.members || []
-      members.forEach((m, j) => {
-        rows.push({
-          'Team Name': teamName,
-          'Domain': r.domain,
-          'College': r.college,
-          'Team Size': r.team_size || r.teamSize,
-          'Member Role': j === 0 ? 'Leader' : `Member ${j + 1}`,
-          'Full Name': m.name, 'Email': m.email, 'Phone': m.phone, 'Skill/Role': m.role,
-          'Project Title': r.project_title || r.projectTitle || '',
-          'Project Description': r.project_desc || r.projectDesc || '',
-          'Status': r.status,
-          'Ticket ID': r.ticket_id || r.ticketId || '',
-          'Fee Amount': r.fee_amount || 549,
-          'PPT/PDF File': r.ppt_name || r.ppt?.name || '',
-          'PPT/PDF URL': r.ppt_url || '',
-          'PPT Link': r.ppt_link || '',
-          'Registered At': new Date(r.registered_at || r.registeredAt).toLocaleString(),
-        })
+      const row = {
+        'Team Name': r.team_name || r.teamName,
+        'Domain': r.domain,
+        'College': r.college,
+        'Team Size': r.team_size || r.teamSize,
+        'Project Title': r.project_title || r.projectTitle || '',
+        'Status': r.status,
+        'Fee Amount': r.fee_amount || 549,
+        'Ticket ID': r.ticket_id || r.ticketId || '',
+        'PPT/PDF URL': r.ppt_url || r.ppt_link || '',
+        'Registered At': new Date(r.registered_at || r.registeredAt).toLocaleString(),
+      }
+      members.forEach((m, i) => {
+        const label = i === 0 ? 'Leader' : `Member ${i + 1}`
+        row[`${label} Name`] = m.name || ''
+        row[`${label} Email`] = m.email || ''
+        row[`${label} Phone`] = m.phone || ''
+        row[`${label} Role`] = m.role || ''
       })
-    }
+      return row
+    })
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Registrations')
@@ -237,12 +236,8 @@ export default function Admin() {
   const downloadPpt = async (reg) => {
     try {
       const data = await downloadPptAPI(reg.id)
-      if (!data || (!data.url && !data.data)) {
-        showToast('No file uploaded for this team.', 'warn')
-        return
-      }
+      if (!data) { showToast('No file found.', 'warn'); return }
       if (data.url) {
-        // Open Cloudinary URL directly — avoids CORS fetch issues
         window.open(data.url, '_blank')
       } else if (data.data) {
         const a = document.createElement('a')
@@ -251,6 +246,9 @@ export default function Admin() {
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
+      } else {
+        // ppt_name exists but no url/data — file upload may have failed
+        showToast('File name recorded but upload may have failed. Ask team to re-upload.', 'warn')
       }
     } catch (e) {
       showToast('Download failed: ' + e.message, 'warn')
