@@ -150,14 +150,17 @@ export async function getWAQr(token) {
 
 // ── Direct Cloudinary upload ──────────────────────────────────
 export async function uploadPptToCloudinary(file, registrationId) {
-  // Get cloud name from server
+  // Get cloud config from server
   const sigRes = await fetch(`${BASE}/api/cloudinary-signature`)
+  if (!sigRes.ok) throw new Error('Could not reach server. Please try again.')
   const { cloudName, apiKey, folder, uploadPreset } = await sigRes.json()
+
+  if (!cloudName) throw new Error('Cloudinary not configured on server.')
 
   const formData = new FormData()
   formData.append('file', file)
   formData.append('upload_preset', uploadPreset || 'techverse_ppts')
-  formData.append('folder', folder)
+  formData.append('folder', folder || 'techverse_ppts')
   formData.append('resource_type', 'raw')
 
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
@@ -165,14 +168,17 @@ export async function uploadPptToCloudinary(file, registrationId) {
     body: formData,
   })
   const uploadData = await uploadRes.json()
-  if (!uploadData.secure_url) throw new Error(uploadData.error?.message || 'Upload failed')
+  if (!uploadData.secure_url) {
+    throw new Error(uploadData.error?.message || 'Cloudinary upload failed. Check upload preset settings.')
+  }
 
   // Save URL to DB
-  await fetch(`${BASE}/api/registrations/${registrationId}/ppt-url`, {
+  const saveRes = await fetch(`${BASE}/api/registrations/${registrationId}/ppt-url`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pptUrl: uploadData.secure_url, pptName: file.name, pptSize: file.size }),
   })
+  if (!saveRes.ok) throw new Error('File uploaded but failed to save URL. Contact support.')
 
   return uploadData.secure_url
 }
