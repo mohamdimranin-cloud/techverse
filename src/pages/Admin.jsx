@@ -260,7 +260,11 @@ export default function Admin() {
       const data = await downloadPptAPI(reg.id)
       if (!data) { showToast('No file found.', 'warn'); return }
       if (data.url) {
-        window.open(data.url, '_blank')
+        // Add fl_attachment to force download instead of browser render
+        const downloadUrl = data.url.includes('res.cloudinary.com')
+          ? data.url.replace('/raw/upload/', '/raw/upload/fl_attachment/')
+          : data.url
+        window.open(downloadUrl, '_blank')
       } else if (data.data) {
         const a = document.createElement('a')
         a.href = data.data
@@ -269,7 +273,6 @@ export default function Admin() {
         a.click()
         document.body.removeChild(a)
       } else {
-        // ppt_name exists but no url/data — file upload may have failed
         showToast('File name recorded but upload may have failed. Ask team to re-upload.', 'warn')
       }
     } catch (e) {
