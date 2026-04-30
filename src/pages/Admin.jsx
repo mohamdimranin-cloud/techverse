@@ -560,6 +560,26 @@ export default function Admin() {
                 <h4>🔖 Update Status</h4>
                 <button
                   className="btn btn-primary"
+                  style={{ marginBottom: '0.75rem', width: '100%', background: 'rgba(34,211,238,0.1)', borderColor: '#22d3ee', color: '#22d3ee' }}
+                  onClick={async () => {
+                    const ticketId = selected.ticket_id || selected.ticketId
+                    const uploadUrl = `https://bit-techverse.netlify.app/upload/${ticketId}`
+                    const msg = `📎 *Upload Your PPT*\n\nHey Team *${selected.teamName}*, please upload your presentation for TechVerse Hackathon 2026 using the link below:\n\n🔗 ${uploadUrl}\n\nYou can re-upload anytime — the latest file will be used for evaluation.\n\n*Team TechVerse* ⚡`
+                    try {
+                      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/send-upload-link`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                        body: JSON.stringify({ teamName: selected.teamName, members: selected.members, ticketId }),
+                      })
+                      const data = await res.json()
+                      if (data.success) showToast(`Upload link sent to ${data.results.filter(r => r.status === 'sent').length} member(s)`, 'success')
+                      else showToast(`⚠️ ${data.error || 'Failed to send'}`, 'warn')
+                    } catch (err) { showToast(`⚠️ ${err.message}`, 'warn') }
+                  }}>
+                  📎 Send Upload Link via WhatsApp
+                </button>
+                <button
+                  className="btn btn-primary"
                   style={{ marginBottom: '0.75rem', width: '100%', background: 'rgba(168,85,247,0.15)', borderColor: '#a855f7', color: '#a855f7' }}
                   onClick={async () => {
                     try {

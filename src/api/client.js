@@ -162,6 +162,9 @@ export async function uploadPptToCloudinary(file, registrationId) {
   formData.append('upload_preset', uploadPreset || 'techverse_ppts')
   formData.append('folder', folder || 'techverse_ppts')
   formData.append('resource_type', 'raw')
+  // Use registration ID as public_id so re-uploads overwrite the previous file
+  formData.append('public_id', `${folder || 'techverse_ppts'}/${registrationId}`)
+  formData.append('overwrite', 'true')
 
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
     method: 'POST',
@@ -172,7 +175,7 @@ export async function uploadPptToCloudinary(file, registrationId) {
     throw new Error(uploadData.error?.message || 'Cloudinary upload failed. Check upload preset settings.')
   }
 
-  // Save URL to DB
+  // Save URL + name to DB (always update so latest file is reflected)
   const saveRes = await fetch(`${BASE}/api/registrations/${registrationId}/ppt-url`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

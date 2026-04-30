@@ -47,7 +47,7 @@ async function uploadToCloudinary(base64Data, filename) {
     folder: 'techverse_ppts',
     public_id: filename.replace(/\.[^/.]+$/, ''),
     use_filename: true,
-    overwrite: false,
+    overwrite: true,
     access_mode: 'public',
   })
   return result.secure_url
@@ -360,6 +360,19 @@ app.patch('/api/registrations/:id/ppt-url', async (req, res) => {
     [pptUrl, pptName, pptSize, req.params.id]
   )
   res.json({ success: true })
+})
+
+app.post('/api/send-upload-link', requireAuth, async (req, res) => {
+  const { teamName, members, ticketId } = req.body
+  if (!isConnected) return res.json({ success: false, error: 'WhatsApp not connected', results: [] })
+  const uploadUrl = `https://bit-techverse.netlify.app/upload/${ticketId}`
+  const msg = `📎 *Upload Your PPT*\n\nHey Team *${teamName}*, please upload your presentation for TechVerse Hackathon 2026 using the link below:\n\n🔗 ${uploadUrl}\n\nYou can re-upload anytime — the latest file will be used for evaluation.\n\n*Team TechVerse* ⚡`
+  const results = []
+  for (const m of members) {
+    try { await sendWA(m.phone, msg); results.push({ name: m.name, status: 'sent' }) }
+    catch (e) { results.push({ name: m.name, status: 'failed', error: e.message }) }
+  }
+  res.json({ success: true, results })
 })
 
 app.post('/api/notify-registration', async (req, res) => {

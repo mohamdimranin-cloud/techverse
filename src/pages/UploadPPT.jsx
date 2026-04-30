@@ -37,7 +37,7 @@ export default function UploadPPT() {
     const file = e.target.files[0]
     setPptError('')
     if (!file) return
-    if (!file.name.match(/\.(ppt|pptx|pdf)$/i)) { setPptError('Only .ppt, .pptx or .pdf files allowed'); return }
+    if (!file.name.match(/\.(ppt|pptx)$/i)) { setPptError('Only .ppt or .pptx files are allowed'); return }
     if (file.size > 10 * 1024 * 1024) { setPptError(`File too large (${(file.size/1024/1024).toFixed(1)}MB). Max 10MB.`); return }
     setPptFile(file)
   }
@@ -78,6 +78,13 @@ export default function UploadPPT() {
             <p className={styles.successIcon}>✓</p>
             <p className={styles.successMsg}>PPT uploaded successfully!</p>
             <p className={styles.successSub}>Your presentation has been received. Good luck!</p>
+            <button
+              className="btn btn-outline"
+              style={{ marginTop: '1rem' }}
+              onClick={() => { setStatus(null); setPptFile(null); setPptError('') }}
+            >
+              Re-upload PPT
+            </button>
           </div>
         )}
 
@@ -106,9 +113,9 @@ export default function UploadPPT() {
             <p className={styles.idConfirm}>Registration ID: <strong>{ticketId}</strong></p>
             <div className={styles.field}>
               <label>Select PPT File *</label>
-              <p className={styles.hint}>Max 10MB · .ppt, .pptx or .pdf</p>
+              <p className={styles.hint}>Max 10MB · .ppt or .pptx only</p>
               <label className={`${styles.uploadBox} ${pptFile ? styles.uploadDone : ''}`}>
-                <input type="file" accept=".ppt,.pptx,.pdf" onChange={handleFile} style={{ display: 'none' }} />
+                <input type="file" accept=".ppt,.pptx" onChange={handleFile} style={{ display: 'none' }} />
                 {pptFile ? (
                   <div className={styles.fileInfo}>
                     <span>📊</span>
