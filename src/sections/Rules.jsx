@@ -40,7 +40,7 @@ export default function Rules() {
             <a href="/BIT-TechVerse2026.pdf" target="_blank" rel="noopener noreferrer" className={styles.docLink}>
               TechVerse 2026 Brochure
             </a>
-            <a href="/BIT-TechVerse-Guideline.pdf" target="_blank" rel="noopener noreferrer" className={styles.docLink}>
+            <a href="/final-guidelines.pdf" target="_blank" rel="noopener noreferrer" className={styles.docLink}>
               Guidelines
             </a>
             <a href="/BIT-TechVerse-Rulebook.pdf" target="_blank" rel="noopener noreferrer" className={styles.docLink}>
