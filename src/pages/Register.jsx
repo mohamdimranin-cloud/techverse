@@ -4,6 +4,8 @@ import { QRCodeSVG } from 'qrcode.react'
 import { submitRegistration, notifyRegistration, uploadPptToCloudinary } from '../api/client'
 import styles from './Register.module.css'
 
+const BASE = import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'
+
 const DOMAINS = [
   { theme: 'Rural Tech', options: ['Agritech', 'Fisheries & Coastal Solutions'] },
   { theme: 'MedTech', options: ['Health Technology'] },
@@ -20,6 +22,14 @@ export default function Register() {
   const [pptFile, setPptFile] = useState(null)
   const [pptError, setPptError] = useState('')
   const [pptMode, setPptMode] = useState('upload')
+  const [regClosed, setRegClosed] = useState(false)
+
+  useState(() => {
+    fetch(`${BASE}/api/settings/deadline`)
+      .then(r => r.json())
+      .then(d => { if (d.deadline) setRegClosed(new Date(d.deadline) < new Date()) })
+      .catch(() => {})
+  })
 
   const [form, setForm] = useState({
     teamName: '',
@@ -122,6 +132,26 @@ export default function Register() {
 
   return (
     <div className={styles.page}>
+
+      {/* Registration Closed Gate */}
+      {regClosed && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(0,0,0,0.85)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        }}>
+          <div className="glass-card" style={{ maxWidth: '380px', width: '100%', padding: '2.5rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</div>
+            <h2 style={{ color: '#f87171', marginBottom: '0.5rem' }}>Registration Closed</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              The registration deadline has passed. Thank you for your interest in TechVerse 2026.
+            </p>
+            <button className="btn btn-outline" style={{ width: '100%' }} onClick={() => navigate('/')}>
+              ← Back to Home
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Error Modal */}
       {submitError && (

@@ -1,13 +1,22 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useRef, Suspense, lazy } from 'react'
+import { useEffect, useRef, Suspense, lazy, useState } from 'react'
 import { useDeviceCapability } from '../hooks/useDeviceCapability'
 import styles from './Hero.module.css'
 
 const Robot3D = lazy(() => import('../components/Robot3D'))
+const BASE = import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'
 
 export default function Hero() {
   const { isLowEnd } = useDeviceCapability()
   const orbRef = useRef(null)
+  const [regClosed, setRegClosed] = useState(false)
+
+  useEffect(() => {
+    fetch(`${BASE}/api/settings/deadline`)
+      .then(r => r.json())
+      .then(d => { if (d.deadline) setRegClosed(new Date(d.deadline) < new Date()) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const move = (e) => {
@@ -40,7 +49,13 @@ export default function Hero() {
           where developers, designers, and innovators come together to build impactful solutions.
         </p>
         <div className={styles.btns}>
-          <Link to="/register" className="btn btn-primary btn-lg">Register Now</Link>
+          {regClosed ? (
+            <span className="btn btn-primary btn-lg" style={{ opacity: 0.45, cursor: 'not-allowed', pointerEvents: 'none' }}>
+              Registration Closed
+            </span>
+          ) : (
+            <Link to="/register" className="btn btn-primary btn-lg">Register Now</Link>
+          )}
           <a href="#rules" className="btn btn-outline btn-lg">Rules & Guidelines</a>
         </div>
       </div>
