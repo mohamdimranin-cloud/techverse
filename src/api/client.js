@@ -162,9 +162,6 @@ export async function uploadPptToCloudinary(file, registrationId) {
   formData.append('upload_preset', uploadPreset || 'techverse_ppts')
   formData.append('folder', folder || 'techverse_ppts')
   formData.append('resource_type', 'raw')
-  // Use registration ID as public_id so re-uploads overwrite the previous file
-  formData.append('public_id', `${folder || 'techverse_ppts'}/${registrationId}`)
-  formData.append('overwrite', 'true')
 
   const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`, {
     method: 'POST',
