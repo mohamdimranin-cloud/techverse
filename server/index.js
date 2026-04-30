@@ -437,7 +437,9 @@ app.post('/api/send-payment-request', requireAuth, async (req, res) => {
   const msg = `🎉 *Congratulations!*\n\nOut of 100+ competing teams, your team *${teamName}* has been shortlisted for the next round of TechVerse 2026! 🚀\n\nTo proceed, please complete the participation fee of *₹${feeAmount}* using the link provided. Once your payment is successfully confirmed, your QR code ticket will be generated and sent to you.\n\n💳 *UPI ID:* ${UPI_ID}\n🔗 *Pay Link:* ${upiLink}\n\nPlease send your successful payment screenshot to this number.\n\nWe look forward to seeing you in the next round!\n\n*Team TechVerse* ⚡`
 
   const results = []
-  for (const m of members) {
+  const leaders = members.filter(m => m.isLeader || m.is_leader)
+  const targets = leaders.length > 0 ? leaders : members.slice(0, 1)
+  for (const m of targets) {
     let p = m.phone.replace(/\D/g, '')
     if (p.startsWith('0')) p = '91' + p.slice(1)
     if (!p.startsWith('91')) p = '91' + p
