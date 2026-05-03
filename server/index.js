@@ -172,11 +172,25 @@ app.patch('/api/registrations/:id/members', requireAuth, async (req, res) => {
   try {
     await client.query('BEGIN')
     for (const m of members) {
-      await client.query(
-        `UPDATE members SET name=$1, email=$2, phone=$3, role=$4 WHERE id=$5 AND registration_id=$6`,
-        [m.name, m.email, m.phone, m.role || '', m.id, req.params.id]
-      )
+      if (m.id) {
+        // existing member — update
+        await client.query(
+          `UPDATE members SET name=$1, email=$2, phone=$3, role=$4 WHERE id=$5 AND registration_id=$6`,
+          [m.name, m.email, m.phone, m.role || '', m.id, req.params.id]
+        )
+      } else {
+        // new member — insert
+        await client.query(
+          `INSERT INTO members (registration_id, name, email, phone, role, is_leader) VALUES ($1,$2,$3,$4,$5,false)`,
+          [req.params.id, m.name, m.email, m.phone, m.role || '']
+        )
+      }
     }
+    // update team_size to reflect actual member count
+    await client.query(
+      `UPDATE registrations SET team_size=(SELECT COUNT(*) FROM members WHERE registration_id=$1) WHERE id=$1`,
+      [req.params.id]
+    )
     await client.query('COMMIT')
     res.json({ success: true })
   } catch (err) {

@@ -573,6 +573,12 @@ export default function Admin() {
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                   {editingMembers ? (
                     <>
+                      {editingMembers.length < 4 && (
+                        <button className="btn btn-outline" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+                          onClick={() => setEditingMembers(prev => [...prev, { name: '', email: '', phone: '', role: '' }])}>
+                          + Add Member
+                        </button>
+                      )}
                       <button className="btn btn-primary" style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem' }}
                         onClick={async () => {
                           const data = await updateMembers(selected.id, editingMembers)
