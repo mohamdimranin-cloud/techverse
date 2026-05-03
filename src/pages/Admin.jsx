@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import emailjs from '@emailjs/browser'
-import { fetchRegistrations, updateRegistrationStatus, deleteRegistrationAPI, downloadPptAPI, sendTicket, notifyStatus, sendPaymentRequest, getWAStatus, getWAQr, login as apiLogin } from '../api/client'
+import { fetchRegistrations, updateRegistrationStatus, deleteRegistrationAPI, updateMembers, downloadPptAPI, sendTicket, notifyStatus, sendPaymentRequest, getWAStatus, getWAQr, login as apiLogin } from '../api/client'
 import * as XLSX from 'xlsx'
 import JSZip from 'jszip'
 import AdminSponsors from './AdminSponsors'
@@ -32,6 +32,7 @@ export default function Admin() {
   const [selected, setSelected] = useState(null)
   const [confirmStatus, setConfirmStatus] = useState(null) // { id, status, reg }
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [editingMembers, setEditingMembers] = useState(null) // local copy for editing
 
   const [activeTab, setActiveTab] = useState('registrations')
   const [deadlineInput, setDeadlineInput] = useState('')
@@ -498,11 +499,11 @@ export default function Admin() {
 
       </div>
       {selected && (
-        <div className={styles.modalOverlay} onClick={() => setSelected(null)}>
+        <div className={styles.modalOverlay} onClick={() => { setSelected(null); setEditingMembers(null) }}>
           <div className={`glass-card ${styles.detailModal}`} onClick={e => e.stopPropagation()}>
             <div className={styles.detailHeader}>
               <h2 className={styles.detailTeam}>{selected.teamName}</h2>
-              <button className={styles.closeBtn} onClick={() => setSelected(null)}>✕</button>
+              <button className={styles.closeBtn} onClick={() => { setSelected(null); setEditingMembers(null) }}>✕</button>
             </div>
 
             <div className={styles.detailMeta}>
@@ -526,15 +527,78 @@ export default function Admin() {
 
               <div className={styles.detailSection}>
                 <h4>👥 Team Members</h4>
-                {selected.members.map((m, i) => (
-                  <div key={i} className={styles.memberRow}>
-                    <span className={styles.memberBadge}>{i === 0 ? '👑' : '👤'}</span>
-                    <div>
-                      <p className={styles.memberName}>{m.name} <span className={styles.memberRole}>· {m.role}</span></p>
-                      <p className={styles.memberContact}>{m.email} · {m.phone}</p>
+                {(editingMembers || selected.members).map((m, i) => (
+                  editingMembers ? (
+                    <div key={i} className={styles.memberRow} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.4rem', marginBottom: '0.75rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <span className={styles.memberBadge}>{i === 0 ? '👑' : '👤'}</span>
+                        <input
+                          value={m.name}
+                          onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
+                          placeholder="Name"
+                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', paddingLeft: '1.8rem' }}>
+                        <input
+                          value={m.email}
+                          onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, email: e.target.value } : x))}
+                          placeholder="Email"
+                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
+                        />
+                        <input
+                          value={m.phone}
+                          onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, phone: e.target.value } : x))}
+                          placeholder="Phone"
+                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
+                        />
+                        <input
+                          value={m.role || ''}
+                          onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, role: e.target.value } : x))}
+                          placeholder="Role"
+                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div key={i} className={styles.memberRow}>
+                      <span className={styles.memberBadge}>{i === 0 ? '👑' : '👤'}</span>
+                      <div>
+                        <p className={styles.memberName}>{m.name} <span className={styles.memberRole}>· {m.role}</span></p>
+                        <p className={styles.memberContact}>{m.email} · {m.phone}</p>
+                      </div>
+                    </div>
+                  )
                 ))}
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  {editingMembers ? (
+                    <>
+                      <button className="btn btn-primary" style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem' }}
+                        onClick={async () => {
+                          const data = await updateMembers(selected.id, editingMembers)
+                          if (data.success) {
+                            setSelected(r => ({ ...r, members: editingMembers }))
+                            setEditingMembers(null)
+                            reload()
+                            showToast('Members updated', 'success')
+                          } else {
+                            showToast(`⚠️ ${data.error}`, 'warn')
+                          }
+                        }}>
+                        Save
+                      </button>
+                      <button className="btn btn-outline" style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem' }}
+                        onClick={() => setEditingMembers(null)}>
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button className="btn btn-outline" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+                      onClick={() => setEditingMembers(selected.members.map(m => ({ ...m })))}>
+                      ✏️ Edit Members
+                    </button>
+                  )}
+                </div>
               </div>
 
               {(selected.ppt || selected.ppt_link) && (

@@ -45,6 +45,15 @@ export async function updateRegistrationStatus(id, status) {
   return res.json()
 }
 
+export async function updateMembers(registrationId, members) {
+  const res = await fetch(`${BASE}/api/registrations/${registrationId}/members`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ members }),
+  })
+  return res.json()
+}
+
 export async function deleteRegistrationAPI(id) {
   const res = await fetch(`${BASE}/api/registrations/${id}`, {
     method: 'DELETE',

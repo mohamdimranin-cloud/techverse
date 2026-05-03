@@ -166,6 +166,25 @@ app.patch('/api/registrations/:id/status', requireAuth, async (req, res) => {
   res.json({ success: true })
 })
 
+app.patch('/api/registrations/:id/members', requireAuth, async (req, res) => {
+  const { members } = req.body
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    for (const m of members) {
+      await client.query(
+        `UPDATE members SET name=$1, email=$2, phone=$3, role=$4 WHERE id=$5 AND registration_id=$6`,
+        [m.name, m.email, m.phone, m.role || '', m.id, req.params.id]
+      )
+    }
+    await client.query('COMMIT')
+    res.json({ success: true })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    res.status(500).json({ error: err.message })
+  } finally { client.release() }
+})
+
 app.delete('/api/registrations/:id', requireAuth, async (req, res) => {
   await pool.query(`DELETE FROM registrations WHERE id=$1`, [req.params.id])
   res.json({ success: true })
