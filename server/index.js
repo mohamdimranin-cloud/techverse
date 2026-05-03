@@ -153,7 +153,7 @@ app.get('/api/registration-by-ticket/:ticketId', async (req, res) => {
 
 app.get('/api/registrations', requireAuth, async (req, res) => {
   const { rows } = await pool.query(`
-    SELECT r.*, json_agg(json_build_object('name',m.name,'email',m.email,'phone',m.phone,'role',m.role,'isLeader',m.is_leader) ORDER BY m.is_leader DESC) AS members
+    SELECT r.*, json_agg(json_build_object('id',m.id,'name',m.name,'email',m.email,'phone',m.phone,'role',m.role,'isLeader',m.is_leader) ORDER BY m.is_leader DESC) AS members
     FROM registrations r LEFT JOIN members m ON m.registration_id = r.id
     GROUP BY r.id ORDER BY r.registered_at DESC
   `)

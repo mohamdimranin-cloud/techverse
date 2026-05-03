@@ -59,6 +59,10 @@ export default function Admin() {
       checkedInAt: r.checked_in_at || r.checkedInAt,
       ppt: (r.ppt_name || r.ppt) ? { name: r.ppt_name || r.ppt?.name, size: r.ppt_size || r.ppt?.size } : null,
       ppt_link: r.ppt_link || null,
+      members: (r.members || []).map(m => ({
+        ...m,
+        id: m.id || null,
+      })),
     })))
   })
   const [waQr, setWaQr] = useState(null)
