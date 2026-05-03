@@ -151,33 +151,34 @@ export default function Admin() {
     const { id, status, reg } = confirmStatus
     setConfirmStatus(null)
     await updateRegistrationStatus(id, status)
-    reload()
+    await reload()
     if (selected?.id === id) setSelected(r => ({ ...r, status }))
+    // Always use freshest members from reloaded registrations
+    const freshReg = { ...reg, ...registrations.find(r => r.id === id), status }
     // Send WhatsApp notification for every status change
-    if (reg) {
+    if (freshReg) {
       try {
         // Send QR ticket when shortlisted
         if (status === 'shortlisted') {
           const waResult = await sendTicket({
-            teamName: reg.team_name || reg.teamName,
-            members: reg.members,
-            domain: reg.domain,
-            projectTitle: reg.project_title || reg.projectTitle,
-            ticketId: reg.ticket_id || reg.ticketId,
+            teamName: freshReg.team_name || freshReg.teamName,
+            members: freshReg.members,
+            domain: freshReg.domain,
+            projectTitle: freshReg.project_title || freshReg.projectTitle,
+            ticketId: freshReg.ticket_id || freshReg.ticketId,
           })
           const qrUrl = waResult?.qr || ''
-          console.log(`🎟️ WA ticket sent, QR data URL length: ${qrUrl.length}`)
-          const emailResults = await sendTicketEmails(reg, qrUrl)
+          const emailResults = await sendTicketEmails(freshReg, qrUrl)
           const sent = emailResults.filter(r => r.status === 'sent').length
           showToast(`Shortlisted! Ticket sent via WA + Email (${sent} emails)`, 'success')
         } else {
           const data = await notifyStatus({
-            teamName: reg.team_name || reg.teamName,
-            members: reg.members,
-            domain: reg.domain,
-            projectTitle: reg.project_title || reg.projectTitle,
+            teamName: freshReg.team_name || freshReg.teamName,
+            members: freshReg.members,
+            domain: freshReg.domain,
+            projectTitle: freshReg.project_title || freshReg.projectTitle,
             status,
-            feeAmount: reg.fee_amount || 549,
+            feeAmount: freshReg.fee_amount || 549,
           })
           if (data.success) {
             showToast(`✅ WhatsApp sent to ${data.results.filter(r => r.status === 'sent').length} member(s)`, 'success')
