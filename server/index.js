@@ -166,6 +166,17 @@ app.patch('/api/registrations/:id/status', requireAuth, async (req, res) => {
   res.json({ success: true })
 })
 
+app.delete('/api/registrations/:regId/members/:memberId', requireAuth, async (req, res) => {
+  const { regId, memberId } = req.params
+  // prevent deleting the leader
+  const { rows } = await pool.query(`SELECT is_leader FROM members WHERE id=$1 AND registration_id=$2`, [memberId, regId])
+  if (!rows[0]) return res.status(404).json({ error: 'Member not found' })
+  if (rows[0].is_leader) return res.status(400).json({ error: 'Cannot delete the team leader' })
+  await pool.query(`DELETE FROM members WHERE id=$1 AND registration_id=$2`, [memberId, regId])
+  await pool.query(`UPDATE registrations SET team_size=(SELECT COUNT(*) FROM members WHERE registration_id=$1) WHERE id=$1`, [regId])
+  res.json({ success: true })
+})
+
 app.patch('/api/registrations/:id/members', requireAuth, async (req, res) => {
   const { members } = req.body
   const client = await pool.connect()

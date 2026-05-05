@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import emailjs from '@emailjs/browser'
-import { fetchRegistrations, updateRegistrationStatus, deleteRegistrationAPI, updateMembers, downloadPptAPI, sendTicket, notifyStatus, sendPaymentRequest, getWAStatus, getWAQr, login as apiLogin } from '../api/client'
+import { fetchRegistrations, updateRegistrationStatus, deleteRegistrationAPI, updateMembers, deleteMember, downloadPptAPI, sendTicket, notifyStatus, sendPaymentRequest, getWAStatus, getWAQr, login as apiLogin } from '../api/client'
 import * as XLSX from 'xlsx'
 import JSZip from 'jszip'
 import AdminSponsors from './AdminSponsors'
@@ -543,6 +543,26 @@ export default function Admin() {
                           placeholder="Name"
                           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
                         />
+                        {i !== 0 && (
+                          <button
+                            type="button"
+                            title="Remove member"
+                            style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid #f87171', borderRadius: 8, color: '#f87171', padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.8rem', flexShrink: 0 }}
+                            onClick={async () => {
+                              if (m.id) {
+                                // already saved in DB — delete via API
+                                const data = await deleteMember(selected.id, m.id)
+                                if (!data.success) { showToast(`⚠️ ${data.error}`, 'warn'); return }
+                                reload()
+                                showToast('Member removed', 'success')
+                              }
+                              // remove from local editing state
+                              setEditingMembers(prev => prev.filter((_, j) => j !== i))
+                            }}
+                          >
+                            🗑
+                          </button>
+                        )}
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem', paddingLeft: '1.8rem' }}>
                         <input
