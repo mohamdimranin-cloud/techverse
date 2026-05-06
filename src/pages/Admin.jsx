@@ -299,13 +299,18 @@ export default function Admin() {
     return matchSearch && matchDomain && matchStatus
   }), [registrations, search, filterDomain, filterStatus])
 
-  const stats = useMemo(() => ({
-    total: registrations.length,
-    pending: registrations.filter(r => r.status === 'pending').length,
-    shortlisted: registrations.filter(r => r.status === 'shortlisted').length,
-    rejected: registrations.filter(r => r.status === 'rejected').length,
-    withPpt: registrations.filter(r => r.ppt).length,
-  }), [registrations])
+  const stats = useMemo(() => {
+    const shortlistedTeams = registrations.filter(r => r.status === 'shortlisted')
+    const shortlistedMemberCount = shortlistedTeams.reduce((sum, r) => sum + (r.members?.length || 0), 0)
+    return {
+      total: registrations.length,
+      pending: registrations.filter(r => r.status === 'pending').length,
+      shortlisted: shortlistedTeams.length,
+      shortlistedMembers: shortlistedMemberCount,
+      rejected: registrations.filter(r => r.status === 'rejected').length,
+      withPpt: registrations.filter(r => r.ppt).length,
+    }
+  }, [registrations])
 
   // ── Login screen ──────────────────────────────────────────
   if (!authed) {
@@ -413,6 +418,7 @@ export default function Admin() {
             { label: 'Total Teams', val: stats.total, clr: '#a855f7' },
             { label: 'Pending', val: stats.pending, clr: '#f59e0b' },
             { label: 'Shortlisted', val: stats.shortlisted, clr: '#10b981' },
+            { label: 'Shortlisted Members', val: stats.shortlistedMembers, clr: '#22d3ee' },
             { label: 'Rejected', val: stats.rejected, clr: '#f87171' },
             { label: 'PPT Uploaded', val: stats.withPpt, clr: '#38bdf8' },
           ].map(s => (
