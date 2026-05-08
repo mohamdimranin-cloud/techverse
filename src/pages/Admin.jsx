@@ -6,6 +6,7 @@ import JSZip from 'jszip'
 import AdminSponsors from './AdminSponsors'
 import AdminCheckin from './AdminCheckin'
 import AdminPPT from './AdminPPT'
+import AdminHints from './AdminHints'
 import styles from './Admin.module.css'
 
 import { getToken } from '../api/client'
@@ -301,17 +302,12 @@ export default function Admin() {
 
   const stats = useMemo(() => {
     const shortlistedTeams = registrations.filter(r => r.status === 'shortlisted')
-    const shortlistedMembers = shortlistedTeams.flatMap(r => r.members || [])
-    const shortlistedMemberCount = shortlistedMembers.length
-    const maleCount = shortlistedMembers.filter(m => m.gender === 'Male').length
-    const femaleCount = shortlistedMembers.filter(m => m.gender === 'Female').length
+    const shortlistedMemberCount = shortlistedTeams.reduce((sum, r) => sum + (r.members?.length || 0), 0)
     return {
       total: registrations.length,
       pending: registrations.filter(r => r.status === 'pending').length,
       shortlisted: shortlistedTeams.length,
       shortlistedMembers: shortlistedMemberCount,
-      shortlistedMale: maleCount,
-      shortlistedFemale: femaleCount,
       rejected: registrations.filter(r => r.status === 'rejected').length,
       withPpt: registrations.filter(r => r.ppt).length,
     }
@@ -371,6 +367,7 @@ export default function Admin() {
 
       <div className={styles.inner}>
         {/* Tabs */}
+        {/* Tabs */}
         <div className={styles.tabs}>
           <button className={`${styles.tab} ${activeTab === 'registrations' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('registrations')}>📋 Registrations</button>
@@ -378,6 +375,8 @@ export default function Admin() {
             onClick={() => setActiveTab('checkin')}>✅ Check-in</button>
           <button className={`${styles.tab} ${activeTab === 'ppt' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('ppt')}>📊 PPT</button>
+          <button className={`${styles.tab} ${activeTab === 'hints' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('hints')}>🎯 Hints</button>
           <button className={`${styles.tab} ${activeTab === 'sponsors' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('sponsors')}>🤝 Sponsors</button>
           <button className={`${styles.tab} ${activeTab === 'settings' ? styles.tabActive : ''}`}
@@ -387,6 +386,7 @@ export default function Admin() {
         {activeTab === 'sponsors' && <AdminSponsors />}
         {activeTab === 'checkin' && <AdminCheckin />}
         {activeTab === 'ppt' && <AdminPPT />}
+        {activeTab === 'hints' && <AdminHints getToken={getToken} />}
 
         {activeTab === 'settings' && (
           <div className={`glass-card`} style={{ maxWidth: 480, padding: '2rem', marginTop: '1rem' }}>
@@ -424,8 +424,6 @@ export default function Admin() {
             { label: 'Pending', val: stats.pending, clr: '#f59e0b' },
             { label: 'Shortlisted', val: stats.shortlisted, clr: '#10b981' },
             { label: 'Shortlisted Members', val: stats.shortlistedMembers, clr: '#22d3ee' },
-            { label: 'Male (Shortlisted)', val: stats.shortlistedMale, clr: '#3b82f6' },
-            { label: 'Female (Shortlisted)', val: stats.shortlistedFemale, clr: '#ec4899' },
             { label: 'Rejected', val: stats.rejected, clr: '#f87171' },
             { label: 'PPT Uploaded', val: stats.withPpt, clr: '#38bdf8' },
           ].map(s => (
@@ -590,30 +588,19 @@ export default function Admin() {
                           placeholder="Phone"
                           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
                         />
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', paddingLeft: '1.8rem' }}>
                         <input
                           value={m.role || ''}
                           onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, role: e.target.value } : x))}
                           placeholder="Role"
                           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
                         />
-                        <select
-                          value={m.gender || ''}
-                          onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, gender: e.target.value } : x))}
-                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
-                        >
-                          <option value="">Gender</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                        </select>
                       </div>
                     </div>
                   ) : (
                     <div key={i} className={styles.memberRow}>
                       <span className={styles.memberBadge}>{i === 0 ? '👑' : '👤'}</span>
                       <div>
-                        <p className={styles.memberName}>{m.name} <span className={styles.memberRole}>· {m.role}</span> {m.gender && <span className={styles.memberRole}>· {m.gender}</span>}</p>
+                        <p className={styles.memberName}>{m.name} <span className={styles.memberRole}>· {m.role}</span></p>
                         <p className={styles.memberContact}>{m.email} · {m.phone}</p>
                       </div>
                     </div>

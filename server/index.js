@@ -546,6 +546,47 @@ app.get('/api/hint-responses/:name', async (req, res) => {
   res.json(rows)
 })
 
+// Admin endpoint: Get hint completion stats for all teams
+app.get('/api/hint-stats', requireAuth, async (req, res) => {
+  const { rows } = await pool.query(`
+    SELECT 
+      r.id as registration_id,
+      r.team_name,
+      r.ticket_id,
+      json_agg(
+        json_build_object(
+          'id', m.id,
+          'name', m.name,
+          'completed_count', COALESCE(hr.response_count, 0),
+          'is_complete', COALESCE(hr.response_count, 0) >= 10
+        ) ORDER BY m.is_leader DESC
+      ) as members
+    FROM registrations r
+    LEFT JOIN members m ON m.registration_id = r.id
+    LEFT JOIN (
+      SELECT name, COUNT(DISTINCT question_id) as response_count
+      FROM hint_responses
+      GROUP BY name
+    ) hr ON hr.name = m.name
+    GROUP BY r.id, r.team_name, r.ticket_id
+    ORDER BY r.team_name
+  `)
+  res.json(rows)
+})
+
+// Admin endpoint: Get all responses for a specific member
+app.get('/api/hint-responses-detail/:name', requireAuth, async (req, res) => {
+  const { name } = req.params
+  const { rows } = await pool.query(
+    `SELECT question_id, answer, description, photo_url, submitted_at 
+     FROM hint_responses 
+     WHERE name = $1 
+     ORDER BY submitted_at DESC`,
+    [name]
+  )
+  res.json(rows)
+})
+
 app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
   const { name, questionId, matchName, description } = req.body
   let photoUrl = null

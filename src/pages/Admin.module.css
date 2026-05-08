@@ -268,7 +268,7 @@
 }
 
 /* Tabs */
-.tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0; }
 .tab {
   padding: 0.6rem 1.4rem;
   background: none; border: none;

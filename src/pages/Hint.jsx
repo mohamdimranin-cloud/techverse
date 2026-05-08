@@ -21,12 +21,33 @@ export default function Hint() {
   const [name, setName] = useState('')
   const [submitted, setSubmitted] = useState({})
   const [uploading, setUploading] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/hint-teams`)
-      .then(r => r.json())
-      .then(data => setTeams(data))
-      .catch(() => {})
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'
+    console.log('Fetching teams from:', `${apiUrl}/api/hint-teams`)
+    console.log('Environment VITE_API_URL:', import.meta.env.VITE_API_URL)
+    
+    fetch(`${apiUrl}/api/hint-teams`)
+      .then(r => {
+        console.log('Response status:', r.status)
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
+      .then(data => {
+        console.log('Teams data received:', data.length, 'teams')
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format')
+        }
+        setTeams(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('Error fetching teams:', err)
+        setError(err.message)
+        setLoading(false)
+      })
   }, [])
 
   const handleTeamChange = (teamId) => {
@@ -110,24 +131,39 @@ export default function Hint() {
 
         <div className={`glass-card ${styles.infoCard}`}>
           <h3>Who are you?</h3>
-          <div className={styles.row}>
-            <select value={selectedTeam} onChange={e => handleTeamChange(e.target.value)} className={styles.select}>
-              <option value="">Select Your Team *</option>
-              {teams.map(t => (
-                <option key={t.id} value={t.id}>{t.team_name}</option>
-              ))}
-            </select>
-            <select value={selectedMember} onChange={e => handleMemberChange(e.target.value)} className={styles.select} disabled={!selectedTeam}>
-              <option value="">Select Your Name *</option>
-              {members.map(m => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-          {name && (
-            <div className={styles.selectedInfo}>
-              <p>✓ Playing as: <strong>{name}</strong></p>
-            </div>
+          {loading ? (
+            <p style={{ textAlign: 'center', padding: '1rem', color: '#22d3ee' }}>Loading teams...</p>
+          ) : error ? (
+            <p style={{ textAlign: 'center', padding: '1rem', color: '#ef4444' }}>
+              Error: {error}<br/>
+              <small>Check browser console for details</small>
+            </p>
+          ) : teams.length === 0 ? (
+            <p style={{ textAlign: 'center', padding: '1rem', color: '#ef4444' }}>
+              No teams found. Please check console for errors.
+            </p>
+          ) : (
+            <>
+              <div className={styles.row}>
+                <select value={selectedTeam} onChange={e => handleTeamChange(e.target.value)} className={styles.select}>
+                  <option value="">Select Your Team * ({teams.length} teams)</option>
+                  {teams.map(t => (
+                    <option key={t.id} value={t.id}>{t.team_name}</option>
+                  ))}
+                </select>
+                <select value={selectedMember} onChange={e => handleMemberChange(e.target.value)} className={styles.select} disabled={!selectedTeam}>
+                  <option value="">Select Your Name *</option>
+                  {members.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+              </div>
+              {name && (
+                <div className={styles.selectedInfo}>
+                  <p>✓ Playing as: <strong>{name}</strong></p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
