@@ -528,7 +528,7 @@ app.get('/api/hint-teams', async (req, res) => {
            json_agg(json_build_object('id', m.id, 'name', m.name, 'email', m.email, 'phone', m.phone) ORDER BY m.is_leader DESC) AS members
     FROM registrations r
     LEFT JOIN members m ON m.registration_id = r.id
-    WHERE r.status = 'shortlisted' OR r.status = 'payment pending' OR r.status = 'payment successful'
+    WHERE r.status = 'shortlisted'
     GROUP BY r.id
     ORDER BY r.team_name
   `)
@@ -570,7 +570,7 @@ app.get('/api/hint-stats', requireAuth, async (req, res) => {
       FROM hint_responses
       GROUP BY name
     ) hr ON hr.name = m.name
-    WHERE r.status = 'shortlisted' OR r.status = 'payment pending' OR r.status = 'payment successful'
+    WHERE r.status = 'shortlisted'
     GROUP BY r.id, r.team_name, r.ticket_id, r.status
     ORDER BY r.team_name
   `)
