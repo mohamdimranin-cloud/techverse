@@ -522,8 +522,32 @@ app.post('/api/notify-status', requireAuth, async (req, res) => {
 })
 
 // ── Hint Form ─────────────────────────────────────────────────
+app.get('/api/hint-teams', async (req, res) => {
+  const { rows } = await pool.query(`
+    SELECT r.id, r.team_name, r.ticket_id,
+           json_agg(json_build_object('id', m.id, 'name', m.name, 'email', m.email, 'phone', m.phone) ORDER BY m.is_leader DESC) AS members
+    FROM registrations r
+    LEFT JOIN members m ON m.registration_id = r.id
+    GROUP BY r.id
+    ORDER BY r.team_name
+  `)
+  res.json(rows)
+})
+
+app.get('/api/hint-responses/:name', async (req, res) => {
+  const { name } = req.params
+  const { rows } = await pool.query(
+    `SELECT question_id, answer, description, photo_url, submitted_at 
+     FROM hint_responses 
+     WHERE name = $1 
+     ORDER BY submitted_at DESC`,
+    [name]
+  )
+  res.json(rows)
+})
+
 app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
-  const { name, email, phone, questionId, answer, description } = req.body
+  const { name, questionId, matchName, description } = req.body
   let photoUrl = null
 
   if (req.file) {
@@ -536,14 +560,19 @@ app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
       photoUrl = result.secure_url
     } catch (err) {
       console.error('Cloudinary upload failed:', err.message)
+      return res.status(500).json({ error: 'Photo upload failed' })
     }
+  }
+
+  if (!photoUrl) {
+    return res.status(400).json({ error: 'Photo is required' })
   }
 
   try {
     await pool.query(
-      `INSERT INTO hint_responses (name, email, phone, question_id, answer, description, photo_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [name, email, phone, questionId, answer, description || null, photoUrl]
+      `INSERT INTO hint_responses (name, question_id, answer, description, photo_url)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [name, questionId, matchName, description || null, photoUrl]
     )
     res.json({ success: true })
   } catch (err) {

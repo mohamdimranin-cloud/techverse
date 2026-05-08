@@ -1,33 +1,75 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './Hint.module.css'
 
 const questions = [
-  { id: 'hometown', label: 'Home town', placeholder: 'Where are you from?' },
-  { id: 'food', label: 'Favourite food', placeholder: 'What do you love to eat?' },
-  { id: 'ipl', label: 'Favourite IPL team', placeholder: 'Which team do you support?' },
-  { id: 'language', label: 'Mother tongue', placeholder: 'Your native language?' },
-  { id: 'beverage', label: 'Chai ya coffee?', placeholder: 'Pick your poison' },
-  { id: 'series', label: 'Favourite series', placeholder: 'What do you binge-watch?' },
-  { id: 'actor', label: 'Favourite actor', placeholder: 'Who inspires you?' },
-  { id: 'genre', label: 'Genre in movies', placeholder: 'Action, Romance, Thriller...?' },
-  { id: 'letter', label: 'Name starting from same letter', placeholder: 'Someone whose name starts with your first letter' },
-  { id: 'vacation', label: 'Beach or mountain?', placeholder: 'Where would you go?' },
+  { id: 'hometown', label: 'Home town', placeholder: 'Find someone from the same hometown' },
+  { id: 'food', label: 'Favourite food', placeholder: 'Find someone who loves the same food' },
+  { id: 'ipl', label: 'Favourite IPL team', placeholder: 'Find a fellow fan' },
+  { id: 'language', label: 'Mother tongue', placeholder: 'Find someone who speaks your language' },
+  { id: 'beverage', label: 'Chai ya coffee?', placeholder: 'Find your beverage buddy' },
+  { id: 'series', label: 'Favourite series', placeholder: 'Find someone who binges the same show' },
+  { id: 'actor', label: 'Favourite actor', placeholder: 'Find someone who shares your favorite' },
+  { id: 'genre', label: 'Genre in movies', placeholder: 'Find someone with the same taste' },
+  { id: 'letter', label: 'Name starting from same letter', placeholder: 'Find someone whose name starts with your letter' },
+  { id: 'vacation', label: 'Beach or mountain?', placeholder: 'Find your travel buddy' },
 ]
 
 export default function Hint() {
+  const [teams, setTeams] = useState([])
+  const [selectedTeam, setSelectedTeam] = useState('')
+  const [selectedMember, setSelectedMember] = useState('')
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
   const [submitted, setSubmitted] = useState({})
   const [uploading, setUploading] = useState({})
 
-  const handleSubmit = async (questionId, answer, photo, description) => {
-    if (!name || !email || !phone) {
-      alert('Please fill in your name, email, and phone first')
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/hint-teams`)
+      .then(r => r.json())
+      .then(data => setTeams(data))
+      .catch(() => {})
+  }, [])
+
+  const handleTeamChange = (teamId) => {
+    setSelectedTeam(teamId)
+    setSelectedMember('')
+    setName('')
+    setSubmitted({})
+  }
+
+  const handleMemberChange = (memberId) => {
+    setSelectedMember(memberId)
+    const team = teams.find(t => t.id === selectedTeam)
+    const member = team?.members?.find(m => m.id === memberId)
+    if (member) {
+      setName(member.name)
+      // Fetch previous submissions for this user
+      fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/hint-responses/${encodeURIComponent(member.name)}`)
+        .then(r => r.json())
+        .then(data => {
+          const submittedQuestions = {}
+          data.forEach(response => {
+            submittedQuestions[response.question_id] = true
+          })
+          setSubmitted(submittedQuestions)
+        })
+        .catch(() => {})
+    }
+  }
+
+  const currentTeam = teams.find(t => t.id === selectedTeam)
+  const members = currentTeam?.members || []
+
+  const handleSubmit = async (questionId, matchName, photo, description) => {
+    if (!name) {
+      alert('Please select your team and name first')
       return
     }
-    if (!answer) {
-      alert('Please provide an answer')
+    if (!matchName) {
+      alert('Please enter who you found a match with')
+      return
+    }
+    if (!photo) {
+      alert('Please upload a selfie with your match')
       return
     }
 
@@ -35,12 +77,10 @@ export default function Hint() {
 
     const formData = new FormData()
     formData.append('name', name)
-    formData.append('email', email)
-    formData.append('phone', phone)
     formData.append('questionId', questionId)
-    formData.append('answer', answer)
+    formData.append('matchName', matchName)
     formData.append('description', description || '')
-    if (photo) formData.append('photo', photo)
+    formData.append('photo', photo)
 
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'}/api/hint-submit`, {
@@ -64,17 +104,31 @@ export default function Hint() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>🎯 Get to Know You</h1>
-          <p className={styles.sub}>Share a bit about yourself — let's break the ice!</p>
+          <h1 className={styles.title}>Ohh!! Same here</h1>
+          <p className={styles.sub}>Find someone who shares your answer to each question, take a selfie together!</p>
         </div>
 
         <div className={`glass-card ${styles.infoCard}`}>
-          <h3>Your Details</h3>
+          <h3>Who are you?</h3>
           <div className={styles.row}>
-            <input type="text" placeholder="Your Name *" value={name} onChange={e => setName(e.target.value)} />
-            <input type="email" placeholder="Email *" value={email} onChange={e => setEmail(e.target.value)} />
-            <input type="tel" placeholder="Phone *" value={phone} onChange={e => setPhone(e.target.value)} />
+            <select value={selectedTeam} onChange={e => handleTeamChange(e.target.value)} className={styles.select}>
+              <option value="">Select Your Team *</option>
+              {teams.map(t => (
+                <option key={t.id} value={t.id}>{t.team_name}</option>
+              ))}
+            </select>
+            <select value={selectedMember} onChange={e => handleMemberChange(e.target.value)} className={styles.select} disabled={!selectedTeam}>
+              <option value="">Select Your Name *</option>
+              {members.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </select>
           </div>
+          {name && (
+            <div className={styles.selectedInfo}>
+              <p>✓ Playing as: <strong>{name}</strong></p>
+            </div>
+          )}
         </div>
 
         <div className={styles.questions}>
@@ -92,7 +146,7 @@ export default function Hint() {
         {Object.keys(submitted).length === questions.length && (
           <div className={`glass-card ${styles.successCard}`}>
             <p className={styles.successIcon}>🎉</p>
-            <p className={styles.successMsg}>All done! Thanks for sharing.</p>
+            <p className={styles.successMsg}>All matches found! Great job connecting!</p>
           </div>
         )}
       </div>
@@ -101,10 +155,14 @@ export default function Hint() {
 }
 
 function QuestionCard({ question, submitted, uploading, onSubmit }) {
-  const [answer, setAnswer] = useState('')
+  const [matchName, setMatchName] = useState('')
   const [description, setDescription] = useState('')
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
+  const [showCamera, setShowCamera] = useState(false)
+  const [stream, setStream] = useState(null)
+  const videoRef = useRef(null)
+  const canvasRef = useRef(null)
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0]
@@ -117,15 +175,58 @@ function QuestionCard({ question, submitted, uploading, onSubmit }) {
     setPhotoPreview(URL.createObjectURL(file))
   }
 
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' },
+        audio: false 
+      })
+      setStream(mediaStream)
+      setShowCamera(true)
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream
+        }
+      }, 100)
+    } catch (err) {
+      alert('Camera access denied or not available')
+    }
+  }
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+    setShowCamera(false)
+  }
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0)
+    
+    canvas.toBlob((blob) => {
+      const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' })
+      setPhoto(file)
+      setPhotoPreview(URL.createObjectURL(file))
+      stopCamera()
+    }, 'image/jpeg', 0.9)
+  }
+
   const handleSubmitClick = () => {
-    onSubmit(question.id, answer, photo, description)
+    onSubmit(question.id, matchName, photo, description)
   }
 
   if (submitted) {
     return (
       <div className={`glass-card ${styles.questionCard} ${styles.submitted}`}>
         <h4>{question.label}</h4>
-        <p className={styles.submittedMsg}>✓ Submitted</p>
+        <p className={styles.submittedMsg}>✓ Match Found!</p>
       </div>
     )
   }
@@ -133,41 +234,66 @@ function QuestionCard({ question, submitted, uploading, onSubmit }) {
   return (
     <div className={`glass-card ${styles.questionCard}`}>
       <h4>{question.label}</h4>
+      <p className={styles.instruction}>{question.placeholder}</p>
       <input
         type="text"
-        placeholder={question.placeholder}
-        value={answer}
-        onChange={e => setAnswer(e.target.value)}
+        placeholder="Who did you find? (Their name)"
+        value={matchName}
+        onChange={e => setMatchName(e.target.value)}
         className={styles.input}
       />
       <textarea
-        placeholder="Add a description (optional)"
+        placeholder="Describe your match moment (optional)"
         value={description}
         onChange={e => setDescription(e.target.value)}
         className={styles.textarea}
         rows={2}
       />
-      <label className={styles.photoLabel}>
-        <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
-        {photoPreview ? (
-          <div className={styles.photoPreview}>
-            <img src={photoPreview} alt="Preview" />
+      
+      {showCamera ? (
+        <div className={styles.cameraBox}>
+          <video ref={videoRef} autoPlay playsInline className={styles.video} />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <div className={styles.cameraButtons}>
+            <button type="button" className="btn btn-primary" onClick={capturePhoto}>
+              📸 Capture
+            </button>
+            <button type="button" className="btn btn-outline" onClick={stopCamera}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : photoPreview ? (
+        <div className={styles.photoPreview}>
+          <img src={photoPreview} alt="Preview" />
+          <div className={styles.photoActions}>
             <span className={styles.photoName}>{photo.name}</span>
+            <button type="button" className={styles.retakeBtn} onClick={() => { setPhoto(null); setPhotoPreview(null) }}>
+              🗑 Remove
+            </button>
           </div>
-        ) : (
-          <div className={styles.photoPrompt}>
+        </div>
+      ) : (
+        <div className={styles.photoOptions}>
+          <button type="button" className={styles.photoOptionBtn} onClick={startCamera}>
             <span>📷</span>
-            <p>Upload a photo (optional)</p>
-          </div>
-        )}
-      </label>
+            <p>Take Selfie</p>
+          </button>
+          <label className={styles.photoOptionBtn}>
+            <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
+            <span>🖼️</span>
+            <p>Upload Photo</p>
+          </label>
+        </div>
+      )}
+      
       <button
         className="btn btn-primary"
         onClick={handleSubmitClick}
-        disabled={uploading || !answer}
+        disabled={uploading || !matchName || !photo}
         style={{ width: '100%', marginTop: '0.5rem' }}
       >
-        {uploading ? 'Submitting...' : 'Submit'}
+        {uploading ? 'Submitting...' : 'Submit Match'}
       </button>
     </div>
   )

@@ -45,7 +45,8 @@
   gap: 0.75rem;
 }
 
-.row input {
+.row input,
+.select {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   border-radius: 10px;
@@ -56,6 +57,33 @@
 
 .row input::placeholder {
   color: var(--text-muted);
+}
+
+.select {
+  cursor: pointer;
+}
+
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selectedInfo {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(34, 211, 238, 0.05);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  border-radius: 10px;
+}
+
+.selectedInfo p {
+  color: var(--text);
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+}
+
+.selectedInfo strong {
+  color: var(--neon-cyan);
 }
 
 .questions {
@@ -70,8 +98,15 @@
 
 .questionCard h4 {
   color: var(--text);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-size: 1.05rem;
+}
+
+.instruction {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  font-style: italic;
 }
 
 .input,
@@ -94,6 +129,64 @@
 
 .textarea {
   resize: vertical;
+}
+
+.photoOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.photoOptionBtn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px dashed var(--glass-border);
+  border-radius: 10px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.photoOptionBtn:hover {
+  border-color: var(--neon-cyan);
+  background: rgba(34, 211, 238, 0.05);
+}
+
+.photoOptionBtn span {
+  font-size: 2rem;
+}
+
+.photoOptionBtn p {
+  color: var(--text);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.cameraBox {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.video {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.cameraButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.cameraButtons button {
+  flex: 1;
 }
 
 .photoLabel {
@@ -132,16 +225,21 @@
   border: 1px solid var(--glass-border);
   border-radius: 10px;
   padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .photoPreview img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
   border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.photoActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .photoName {
@@ -151,6 +249,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.retakeBtn {
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid #f87171;
+  color: #f87171;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.retakeBtn:hover {
+  background: rgba(248, 113, 113, 0.25);
 }
 
 .submitted {

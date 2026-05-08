@@ -63,12 +63,10 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS hint_responses (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT NOT NULL,
       question_id TEXT NOT NULL,
       answer TEXT NOT NULL,
       description TEXT,
-      photo_url TEXT,
+      photo_url TEXT NOT NULL,
       submitted_at TIMESTAMPTZ DEFAULT NOW()
     );
   `)
