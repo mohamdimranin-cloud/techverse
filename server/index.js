@@ -13,6 +13,7 @@ const cors = require('cors')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const QRCode = require('qrcode')
+const multer = require('multer')
 const { useDBAuthState } = require('./waAuthState')
 const { v2: cloudinary } = require('cloudinary')
 const { pool, initDB } = require('./db')
@@ -23,6 +24,8 @@ const {
   fetchLatestBaileysVersion,
 } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
 
 const app = express()
 app.use(cors())
@@ -130,8 +133,8 @@ app.post('/api/register', registrationRateLimit, async (req, res) => {
     for (let i = 0; i < members.length; i++) {
       const m = members[i]
       await client.query(
-        `INSERT INTO members (registration_id, name, email, phone, role, gender, is_leader) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-        [reg.id, m.name, m.email, m.phone, m.role || '', m.gender || null, i === 0]
+        `INSERT INTO members (registration_id, name, email, phone, role, is_leader) VALUES ($1,$2,$3,$4,$5,$6)`,
+        [reg.id, m.name, m.email, m.phone, m.role || '', i === 0]
       )
     }
     // PPT is now uploaded directly to Cloudinary from the browser
@@ -153,7 +156,7 @@ app.get('/api/registration-by-ticket/:ticketId', async (req, res) => {
 
 app.get('/api/registrations', requireAuth, async (req, res) => {
   const { rows } = await pool.query(`
-    SELECT r.*, json_agg(json_build_object('id',m.id,'name',m.name,'email',m.email,'phone',m.phone,'role',m.role,'gender',m.gender,'isLeader',m.is_leader) ORDER BY m.is_leader DESC) AS members
+    SELECT r.*, json_agg(json_build_object('id',m.id,'name',m.name,'email',m.email,'phone',m.phone,'role',m.role,'isLeader',m.is_leader) ORDER BY m.is_leader DESC) AS members
     FROM registrations r LEFT JOIN members m ON m.registration_id = r.id
     GROUP BY r.id ORDER BY r.registered_at DESC
   `)
@@ -186,14 +189,14 @@ app.patch('/api/registrations/:id/members', requireAuth, async (req, res) => {
       if (m.id) {
         // existing member — update
         await client.query(
-          `UPDATE members SET name=$1, email=$2, phone=$3, role=$4, gender=$5 WHERE id=$6 AND registration_id=$7`,
-          [m.name, m.email, m.phone, m.role || '', m.gender || null, m.id, req.params.id]
+          `UPDATE members SET name=$1, email=$2, phone=$3, role=$4 WHERE id=$5 AND registration_id=$6`,
+          [m.name, m.email, m.phone, m.role || '', m.id, req.params.id]
         )
       } else {
         // new member — insert
         await client.query(
-          `INSERT INTO members (registration_id, name, email, phone, role, gender, is_leader) VALUES ($1,$2,$3,$4,$5,$6,false)`,
-          [req.params.id, m.name, m.email, m.phone, m.role || '', m.gender || null]
+          `INSERT INTO members (registration_id, name, email, phone, role, is_leader) VALUES ($1,$2,$3,$4,$5,false)`,
+          [req.params.id, m.name, m.email, m.phone, m.role || '']
         )
       }
     }
@@ -516,6 +519,36 @@ app.post('/api/notify-status', requireAuth, async (req, res) => {
     catch (e) { results.push({ name: m.name, status: 'failed', error: e.message }) }
   }
   res.json({ success: true, results })
+})
+
+// ── Hint Form ─────────────────────────────────────────────────
+app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
+  const { name, email, phone, questionId, answer, description } = req.body
+  let photoUrl = null
+
+  if (req.file) {
+    try {
+      const b64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+      const result = await cloudinary.uploader.upload(b64, {
+        folder: 'techverse_hints',
+        resource_type: 'image',
+      })
+      photoUrl = result.secure_url
+    } catch (err) {
+      console.error('Cloudinary upload failed:', err.message)
+    }
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO hint_responses (name, email, phone, question_id, answer, description, photo_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [name, email, phone, questionId, answer, description || null, photoUrl]
+    )
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
 })
 
 // ── Keep-alive ping ───────────────────────────────────────────

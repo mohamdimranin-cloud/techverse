@@ -42,7 +42,6 @@ async function initDB() {
       email TEXT NOT NULL,
       phone TEXT NOT NULL,
       role TEXT,
-      gender TEXT,
       is_leader BOOLEAN DEFAULT FALSE
     );
 
@@ -60,6 +59,18 @@ async function initDB() {
 
     INSERT INTO settings (key, value) VALUES ('registration_deadline', '2026-04-29T23:59:59')
       ON CONFLICT (key) DO NOTHING;
+
+    CREATE TABLE IF NOT EXISTS hint_responses (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      question_id TEXT NOT NULL,
+      answer TEXT NOT NULL,
+      description TEXT,
+      photo_url TEXT,
+      submitted_at TIMESTAMPTZ DEFAULT NOW()
+    );
   `)
   console.log('✅ Database tables ready')
 }

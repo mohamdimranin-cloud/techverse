@@ -10,6 +10,7 @@ import RegistrationSuccess from './pages/RegistrationSuccess'
 import UploadPPT from './pages/UploadPPT'
 import Admin from './pages/Admin'
 import Verify from './pages/Verify'
+import Hint from './pages/Hint'
 
 const CosmonautFlying = lazy(() => import('./components/CosmonautFlying'))
 
@@ -36,6 +37,7 @@ export default function App() {
               <Route path="/register/success" element={<RegistrationSuccess />} />
               <Route path="/upload" element={<UploadPPT />} />
               <Route path="/upload/:ticketId" element={<UploadPPT />} />
+              <Route path="/hint" element={<Hint />} />
             </Routes>
           </>
         } />
