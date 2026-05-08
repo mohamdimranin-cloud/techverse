@@ -97,7 +97,19 @@ export default function AdminHints({ getToken }) {
           return (
             <div key={team.registration_id} className={`${styles.teamCard} ${allComplete ? styles.complete : someComplete ? styles.partial : ''}`}>
               <div className={styles.teamHeader}>
-                <h3>{team.team_name}</h3>
+                <div>
+                  <h3>{team.team_name}</h3>
+                  <span className={styles.statusBadge} style={{
+                    backgroundColor: team.status === 'payment successful' ? 'rgba(34, 211, 238, 0.2)' : 
+                                     team.status === 'payment pending' ? 'rgba(251, 146, 60, 0.2)' : 
+                                     'rgba(16, 185, 129, 0.2)',
+                    color: team.status === 'payment successful' ? '#22d3ee' : 
+                           team.status === 'payment pending' ? '#fb923c' : 
+                           '#10b981'
+                  }}>
+                    {team.status}
+                  </span>
+                </div>
                 {allComplete && <span className={styles.badge}>✅ All Complete</span>}
               </div>
               

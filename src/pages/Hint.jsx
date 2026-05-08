@@ -139,9 +139,14 @@ export default function Hint() {
               <small>Check browser console for details</small>
             </p>
           ) : teams.length === 0 ? (
-            <p style={{ textAlign: 'center', padding: '1rem', color: '#ef4444' }}>
-              No teams found. Please check console for errors.
-            </p>
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <p style={{ color: '#f59e0b', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+                ⚠️ No shortlisted teams found
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                This game is only available for shortlisted teams. Please wait for the shortlist announcement.
+              </p>
+            </div>
           ) : (
             <>
               <div className={styles.row}>
