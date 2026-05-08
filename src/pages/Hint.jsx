@@ -134,10 +134,17 @@ export default function Hint() {
           {loading ? (
             <p style={{ textAlign: 'center', padding: '1rem', color: '#22d3ee' }}>Loading teams...</p>
           ) : error ? (
-            <p style={{ textAlign: 'center', padding: '1rem', color: '#ef4444' }}>
-              Error: {error}<br/>
-              <small>Check browser console for details</small>
-            </p>
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <p style={{ color: '#ef4444', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+                ❌ Error loading teams
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                {error}
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '1rem' }}>
+                Check browser console (F12) for details
+              </p>
+            </div>
           ) : teams.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <p style={{ color: '#f59e0b', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
@@ -150,13 +157,28 @@ export default function Hint() {
           ) : (
             <>
               <div className={styles.row}>
-                <select value={selectedTeam} onChange={e => handleTeamChange(e.target.value)} className={styles.select}>
+                <select 
+                  value={selectedTeam} 
+                  onChange={e => {
+                    console.log('Team selected:', e.target.value)
+                    handleTeamChange(e.target.value)
+                  }} 
+                  className={styles.select}
+                >
                   <option value="">Select Your Team * ({teams.length} teams)</option>
                   {teams.map(t => (
                     <option key={t.id} value={t.id}>{t.team_name}</option>
                   ))}
                 </select>
-                <select value={selectedMember} onChange={e => handleMemberChange(e.target.value)} className={styles.select} disabled={!selectedTeam}>
+                <select 
+                  value={selectedMember} 
+                  onChange={e => {
+                    console.log('Member selected:', e.target.value)
+                    handleMemberChange(e.target.value)
+                  }} 
+                  className={styles.select} 
+                  disabled={!selectedTeam}
+                >
                   <option value="">Select Your Name *</option>
                   {members.map(m => (
                     <option key={m.id} value={m.id}>{m.name}</option>
@@ -172,19 +194,21 @@ export default function Hint() {
           )}
         </div>
 
-        <div className={styles.questions}>
-          {questions.map(q => (
-            <QuestionCard
-              key={q.id}
-              question={q}
-              submitted={submitted[q.id]}
-              uploading={uploading[q.id]}
-              onSubmit={handleSubmit}
-            />
-          ))}
-        </div>
+        {name && (
+          <div className={styles.questions}>
+            {questions.map(q => (
+              <QuestionCard
+                key={q.id}
+                question={q}
+                submitted={submitted[q.id]}
+                uploading={uploading[q.id]}
+                onSubmit={handleSubmit}
+              />
+            ))}
+          </div>
+        )}
 
-        {Object.keys(submitted).length === questions.length && (
+        {name && Object.keys(submitted).length === questions.length && (
           <div className={`glass-card ${styles.successCard}`}>
             <p className={styles.successIcon}>🎉</p>
             <p className={styles.successMsg}>All matches found! Great job connecting!</p>
