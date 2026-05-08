@@ -42,6 +42,7 @@ async function initDB() {
       email TEXT NOT NULL,
       phone TEXT NOT NULL,
       role TEXT,
+      gender TEXT,
       is_leader BOOLEAN DEFAULT FALSE
     );
 

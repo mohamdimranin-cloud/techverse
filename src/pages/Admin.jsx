@@ -301,12 +301,17 @@ export default function Admin() {
 
   const stats = useMemo(() => {
     const shortlistedTeams = registrations.filter(r => r.status === 'shortlisted')
-    const shortlistedMemberCount = shortlistedTeams.reduce((sum, r) => sum + (r.members?.length || 0), 0)
+    const shortlistedMembers = shortlistedTeams.flatMap(r => r.members || [])
+    const shortlistedMemberCount = shortlistedMembers.length
+    const maleCount = shortlistedMembers.filter(m => m.gender === 'Male').length
+    const femaleCount = shortlistedMembers.filter(m => m.gender === 'Female').length
     return {
       total: registrations.length,
       pending: registrations.filter(r => r.status === 'pending').length,
       shortlisted: shortlistedTeams.length,
       shortlistedMembers: shortlistedMemberCount,
+      shortlistedMale: maleCount,
+      shortlistedFemale: femaleCount,
       rejected: registrations.filter(r => r.status === 'rejected').length,
       withPpt: registrations.filter(r => r.ppt).length,
     }
@@ -419,6 +424,8 @@ export default function Admin() {
             { label: 'Pending', val: stats.pending, clr: '#f59e0b' },
             { label: 'Shortlisted', val: stats.shortlisted, clr: '#10b981' },
             { label: 'Shortlisted Members', val: stats.shortlistedMembers, clr: '#22d3ee' },
+            { label: 'Male (Shortlisted)', val: stats.shortlistedMale, clr: '#3b82f6' },
+            { label: 'Female (Shortlisted)', val: stats.shortlistedFemale, clr: '#ec4899' },
             { label: 'Rejected', val: stats.rejected, clr: '#f87171' },
             { label: 'PPT Uploaded', val: stats.withPpt, clr: '#38bdf8' },
           ].map(s => (
@@ -583,19 +590,30 @@ export default function Admin() {
                           placeholder="Phone"
                           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
                         />
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', paddingLeft: '1.8rem' }}>
                         <input
                           value={m.role || ''}
                           onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, role: e.target.value } : x))}
                           placeholder="Role"
                           style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
                         />
+                        <select
+                          value={m.gender || ''}
+                          onChange={e => setEditingMembers(prev => prev.map((x, j) => j === i ? { ...x, gender: e.target.value } : x))}
+                          style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: 8, padding: '0.4rem 0.6rem', color: 'var(--text)', fontSize: '0.85rem' }}
+                        >
+                          <option value="">Gender</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
                       </div>
                     </div>
                   ) : (
                     <div key={i} className={styles.memberRow}>
                       <span className={styles.memberBadge}>{i === 0 ? '👑' : '👤'}</span>
                       <div>
-                        <p className={styles.memberName}>{m.name} <span className={styles.memberRole}>· {m.role}</span></p>
+                        <p className={styles.memberName}>{m.name} <span className={styles.memberRole}>· {m.role}</span> {m.gender && <span className={styles.memberRole}>· {m.gender}</span>}</p>
                         <p className={styles.memberContact}>{m.email} · {m.phone}</p>
                       </div>
                     </div>
