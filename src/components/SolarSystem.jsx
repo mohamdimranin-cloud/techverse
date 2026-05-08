@@ -60,7 +60,7 @@ export default function SolarSystem() {
         camera={{ position: [0, 15, 65], fov: 42 }}
         gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
-        style={{ background: 'transparent' }}
+        style={{ background: 'transparent', pointerEvents: 'none' }}
         frameloop="always"
         shadows={false}
       >

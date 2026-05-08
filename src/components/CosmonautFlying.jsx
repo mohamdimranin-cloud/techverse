@@ -118,6 +118,7 @@ export default function CosmonautFlying() {
       <Canvas
         camera={{ position: [0, 0, 10], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
+        style={{ pointerEvents: 'none' }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
         style={{ background: 'transparent' }}
       >
