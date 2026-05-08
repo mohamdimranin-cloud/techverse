@@ -17,13 +17,14 @@ const CosmonautFlying = lazy(() => import('./components/CosmonautFlying'))
 export default function App() {
   const { pathname } = useLocation()
   const isAdmin = pathname.startsWith('/admin')
+  const isHint = pathname.startsWith('/hint')
   const [intro, setIntro] = useState(!isAdmin)
 
   return (
     <>
-      <StarField />
-      <SolarSystem />
-      <Suspense fallback={null}><CosmonautFlying /></Suspense>
+      {!isHint && <StarField />}
+      {!isHint && <SolarSystem />}
+      {!isHint && <Suspense fallback={null}><CosmonautFlying /></Suspense>}
       {intro && <IntroLoader onDone={() => setIntro(false)} />}
       <Routes>
         <Route path="/admin" element={<Admin />} />
