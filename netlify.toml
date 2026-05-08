@@ -6,3 +6,8 @@
 [build]
   command = "npm run build"
   publish = "dist"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://techverse-1-2fun.onrender.com https://res.cloudinary.com; worker-src 'self' blob:;"
