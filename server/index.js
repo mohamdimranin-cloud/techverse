@@ -615,23 +615,42 @@ app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
       try {
         console.log('📤 Uploading to Cloudinary...')
         console.log('Cloudinary config check:', {
-          cloud_name: !!process.env.CLOUDINARY_CLOUD_NAME,
-          api_key: !!process.env.CLOUDINARY_API_KEY,
-          api_secret: !!process.env.CLOUDINARY_API_SECRET,
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'missing',
+          api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'missing',
         })
         
         const b64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
         
-        // Try upload without folder first (simpler, less likely to fail)
+        // Manual upload with explicit signature
+        const timestamp = Math.round(Date.now() / 1000)
+        const crypto = require('crypto')
+        
+        // Create signature without folder parameter
+        const signature = crypto
+          .createHash('sha1')
+          .update(`timestamp=${timestamp}${process.env.CLOUDINARY_API_SECRET}`)
+          .digest('hex')
+        
+        console.log('Upload params:', { timestamp, signature: signature.substring(0, 10) + '...' })
+        
         const result = await cloudinary.uploader.upload(b64, {
           resource_type: 'image',
-          // Don't specify folder to avoid signature issues
+          timestamp: timestamp,
+          signature: signature,
+          api_key: process.env.CLOUDINARY_API_KEY,
         })
+        
         photoUrl = result.secure_url
         console.log('✅ Photo uploaded to Cloudinary:', photoUrl)
       } catch (err) {
         console.error('❌ Cloudinary upload failed:', err.message, err.stack)
-        return res.status(500).json({ error: 'Photo upload failed: ' + err.message })
+        
+        // Fallback: Store as base64 in database (temporary solution)
+        console.log('⚠️ Falling back to base64 storage')
+        const b64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+        photoUrl = b64
+        console.log('✅ Using base64 storage (fallback)')
       }
     }
 
