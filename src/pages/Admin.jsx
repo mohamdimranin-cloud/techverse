@@ -262,6 +262,123 @@ export default function Admin() {
     showToast(`Exported ${all.length} teams across 3 themes`, 'success')
   }
 
+  const exportShortlisted = async () => {
+    const shortlisted = registrations.filter(r => r.status === 'shortlisted')
+    
+    if (shortlisted.length === 0) {
+      showToast('No shortlisted teams to export', 'warn')
+      return
+    }
+
+    const wb = XLSX.utils.book_new()
+
+    // Sheet 1: Team Details
+    const teamData = shortlisted.map((r, idx) => ({
+      'S.No': idx + 1,
+      'Team Name': r.team_name || r.teamName,
+      'Domain': r.domain,
+      'College': r.college,
+      'Team Size': r.team_size || r.teamSize,
+      'Project Title': r.project_title || r.projectTitle || '',
+      'Project Description': r.project_desc || r.projectDesc || '',
+      'Ticket ID': r.ticket_id || r.ticketId || '',
+      'PPT/PDF URL': r.ppt_url || r.ppt_link || '',
+      'Registered At': new Date(r.registered_at || r.registeredAt).toLocaleString(),
+    }))
+    const wsTeams = XLSX.utils.json_to_sheet(teamData)
+    XLSX.utils.book_append_sheet(wb, wsTeams, 'Team Details')
+
+    // Sheet 2: Member Details
+    const memberData = []
+    shortlisted.forEach((r, idx) => {
+      const members = r.members || []
+      members.forEach((m, mIdx) => {
+        memberData.push({
+          'S.No': memberData.length + 1,
+          'Team Name': r.team_name || r.teamName,
+          'Ticket ID': r.ticket_id || r.ticketId || '',
+          'Member Type': mIdx === 0 ? 'Leader' : `Member ${mIdx + 1}`,
+          'Name': m.name || '',
+          'Email': m.email || '',
+          'Phone': m.phone || '',
+          'Role': m.role || '',
+        })
+      })
+    })
+    const wsMembers = XLSX.utils.json_to_sheet(memberData)
+    XLSX.utils.book_append_sheet(wb, wsMembers, 'Member Details')
+
+    // Sheet 3: Domain-wise Summary
+    const domainGroups = {}
+    shortlisted.forEach(r => {
+      const domain = r.domain
+      if (!domainGroups[domain]) domainGroups[domain] = []
+      domainGroups[domain].push({
+        'Team Name': r.team_name || r.teamName,
+        'College': r.college,
+        'Team Size': r.team_size || r.teamSize,
+        'Project Title': r.project_title || r.projectTitle || '',
+        'Ticket ID': r.ticket_id || r.ticketId || '',
+      })
+    })
+    const domainData = []
+    Object.keys(domainGroups).sort().forEach(domain => {
+      domainData.push({ 'Domain': domain, 'Team Count': domainGroups[domain].length, '': '' })
+      domainGroups[domain].forEach(team => {
+        domainData.push({ 'Domain': '', ...team })
+      })
+      domainData.push({}) // Empty row between domains
+    })
+    const wsDomains = XLSX.utils.json_to_sheet(domainData)
+    XLSX.utils.book_append_sheet(wb, wsDomains, 'Domain Summary')
+
+    // Sheet 4: Contact List (for bulk messaging)
+    const contactData = []
+    shortlisted.forEach(r => {
+      const members = r.members || []
+      members.forEach(m => {
+        if (m.phone) {
+          contactData.push({
+            'Name': m.name || '',
+            'Phone': m.phone || '',
+            'Email': m.email || '',
+            'Team': r.team_name || r.teamName,
+            'Domain': r.domain,
+          })
+        }
+      })
+    })
+    const wsContacts = XLSX.utils.json_to_sheet(contactData)
+    XLSX.utils.book_append_sheet(wb, wsContacts, 'Contact List')
+
+    // Sheet 5: Check-in List
+    const checkinData = shortlisted.map((r, idx) => ({
+      'S.No': idx + 1,
+      'Ticket ID': r.ticket_id || r.ticketId || '',
+      'Team Name': r.team_name || r.teamName,
+      'Domain': r.domain,
+      'Team Size': r.team_size || r.teamSize,
+      'Checked In': r.checked_in ? 'Yes' : 'No',
+      'Check-in Time': r.checked_in_at ? new Date(r.checked_in_at).toLocaleString() : '',
+      'Leader Name': r.members?.[0]?.name || '',
+      'Leader Phone': r.members?.[0]?.phone || '',
+    }))
+    const wsCheckin = XLSX.utils.json_to_sheet(checkinData)
+    XLSX.utils.book_append_sheet(wb, wsCheckin, 'Check-in List')
+
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `TechVerse_Shortlisted_${new Date().toISOString().slice(0,10)}.xlsx`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    showToast(`Exported ${shortlisted.length} shortlisted teams in 5 sheets`, 'success')
+  }
+
   const downloadPpt = async (reg) => {
     try {
       const data = await downloadPptAPI(reg.id)
@@ -353,7 +470,8 @@ export default function Admin() {
           <p className={styles.pageSub}>TechVerse Hackathon 2026 — Registrations</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button className="btn btn-outline" onClick={exportExcel}>⬇ Export Excel</button>
+          <button className="btn btn-primary" onClick={exportShortlisted}>⬇ Export Shortlisted</button>
+          <button className="btn btn-outline" onClick={exportExcel}>⬇ Export All</button>
           <button className="btn btn-outline" onClick={logout}>Logout</button>
           <span
           style={{ fontSize: '0.8rem', color: waConnected ? '#10b981' : '#f87171', cursor: 'pointer' }}
