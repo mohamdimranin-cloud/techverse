@@ -614,10 +614,18 @@ app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
     if (req.file) {
       try {
         console.log('📤 Uploading to Cloudinary...')
+        console.log('Cloudinary config check:', {
+          cloud_name: !!process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: !!process.env.CLOUDINARY_API_KEY,
+          api_secret: !!process.env.CLOUDINARY_API_SECRET,
+        })
+        
         const b64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+        
+        // Try upload without folder first (simpler, less likely to fail)
         const result = await cloudinary.uploader.upload(b64, {
-          folder: 'techverse_hints',
           resource_type: 'image',
+          // Don't specify folder to avoid signature issues
         })
         photoUrl = result.secure_url
         console.log('✅ Photo uploaded to Cloudinary:', photoUrl)
