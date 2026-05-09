@@ -650,6 +650,11 @@ app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
       console.error('❌ Missing required fields:', { name: !!name, questionId: !!questionId, matchName: !!matchName })
       return res.status(400).json({ error: 'Missing required fields' })
     }
+
+    if (!description || description.trim() === '') {
+      console.error('❌ Description is required')
+      return res.status(400).json({ error: 'Description is required' })
+    }
     
     let photoUrl = null
 
@@ -715,7 +720,7 @@ app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
           `UPDATE hint_responses 
            SET answer = $1, description = $2, photo_url = $3, submitted_at = NOW()
            WHERE name = $4 AND question_id = $5`,
-          [matchName, description || null, photoUrl, name, questionId]
+          [matchName, description, photoUrl, name, questionId]
         )
         console.log('✅ Updated existing hint response')
       } else {
@@ -723,7 +728,7 @@ app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
         await pool.query(
           `INSERT INTO hint_responses (name, question_id, answer, description, photo_url)
            VALUES ($1, $2, $3, $4, $5)`,
-          [name, questionId, matchName, description || null, photoUrl]
+          [name, questionId, matchName, description, photoUrl]
         )
         console.log('✅ Inserted new hint response')
       }

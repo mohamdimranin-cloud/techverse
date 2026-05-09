@@ -89,6 +89,10 @@ export default function Hint() {
       alert('Please enter who you found a match with')
       return
     }
+    if (!description || description.trim() === '') {
+      alert('Please describe your match moment')
+      return
+    }
     if (!photo) {
       alert('Please upload a selfie with your match')
       return
@@ -100,7 +104,7 @@ export default function Hint() {
     formData.append('name', name)
     formData.append('questionId', questionId)
     formData.append('matchName', matchName)
-    formData.append('description', description || '')
+    formData.append('description', description)
     formData.append('photo', photo)
 
     try {
@@ -302,17 +306,19 @@ function QuestionCard({ question, submitted, uploading, onSubmit }) {
       <p className={styles.instruction}>{question.placeholder}</p>
       <input
         type="text"
-        placeholder="Who did you find? (Their name)"
+        placeholder="Who did you find? (Their name) *"
         value={matchName}
         onChange={e => setMatchName(e.target.value)}
         className={styles.input}
+        required
       />
       <textarea
-        placeholder="Describe your match moment (optional)"
+        placeholder="Describe your match moment (required) *"
         value={description}
         onChange={e => setDescription(e.target.value)}
         className={styles.textarea}
         rows={2}
+        required
       />
       
       {showCamera ? (
@@ -355,7 +361,7 @@ function QuestionCard({ question, submitted, uploading, onSubmit }) {
       <button
         className="btn btn-primary"
         onClick={handleSubmitClick}
-        disabled={uploading || !matchName || !photo}
+        disabled={uploading || !matchName || !description || description.trim() === '' || !photo}
         style={{ width: '100%', marginTop: '0.5rem' }}
       >
         {uploading ? 'Submitting...' : 'Submit Match'}
