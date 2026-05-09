@@ -592,6 +592,9 @@ app.get('/api/hint-responses-detail/:name', requireAuth, async (req, res) => {
 
 app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
   const { name, questionId, matchName, description } = req.body
+  
+  console.log('📝 Hint submission received:', { name, questionId, matchName, hasFile: !!req.file })
+  
   let photoUrl = null
 
   if (req.file) {
@@ -602,24 +605,47 @@ app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
         resource_type: 'image',
       })
       photoUrl = result.secure_url
+      console.log('✅ Photo uploaded to Cloudinary:', photoUrl)
     } catch (err) {
-      console.error('Cloudinary upload failed:', err.message)
+      console.error('❌ Cloudinary upload failed:', err.message)
       return res.status(500).json({ error: 'Photo upload failed' })
     }
   }
 
   if (!photoUrl) {
+    console.error('❌ No photo URL')
     return res.status(400).json({ error: 'Photo is required' })
   }
 
   try {
-    await pool.query(
-      `INSERT INTO hint_responses (name, question_id, answer, description, photo_url)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [name, questionId, matchName, description || null, photoUrl]
+    // Check if this user already submitted this question
+    const existing = await pool.query(
+      `SELECT id FROM hint_responses WHERE name = $1 AND question_id = $2`,
+      [name, questionId]
     )
+    
+    if (existing.rows.length > 0) {
+      // Update existing response
+      await pool.query(
+        `UPDATE hint_responses 
+         SET answer = $1, description = $2, photo_url = $3, submitted_at = NOW()
+         WHERE name = $4 AND question_id = $5`,
+        [matchName, description || null, photoUrl, name, questionId]
+      )
+      console.log('✅ Updated existing hint response')
+    } else {
+      // Insert new response
+      await pool.query(
+        `INSERT INTO hint_responses (name, question_id, answer, description, photo_url)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [name, questionId, matchName, description || null, photoUrl]
+      )
+      console.log('✅ Inserted new hint response')
+    }
+    
     res.json({ success: true })
   } catch (err) {
+    console.error('❌ Database error:', err.message, err.stack)
     res.status(500).json({ error: err.message })
   }
 })

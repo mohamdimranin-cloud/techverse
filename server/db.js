@@ -67,8 +67,20 @@ async function initDB() {
       answer TEXT NOT NULL,
       description TEXT,
       photo_url TEXT NOT NULL,
-      submitted_at TIMESTAMPTZ DEFAULT NOW()
+      submitted_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(name, question_id)
     );
+
+    -- Add unique constraint if it doesn't exist
+    DO $$ 
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'hint_responses_name_question_id_key'
+      ) THEN
+        ALTER TABLE hint_responses ADD CONSTRAINT hint_responses_name_question_id_key UNIQUE (name, question_id);
+      END IF;
+    END $$;
   `)
   console.log('✅ Database tables ready')
 }
