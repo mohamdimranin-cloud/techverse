@@ -270,101 +270,115 @@ export default function Admin() {
       return
     }
 
+    // Group by domain/theme
+    const themeMap = {
+      'Agritech': 'rural tech',
+      'Fisheries & Coastal Solutions': 'rural tech',
+      'Health Technology': 'med tech',
+      'Cybersecurity': 'future tech',
+      'Energy Conservation & Digitization': 'future tech',
+    }
+
+    const grouped = {
+      'rural tech': [],
+      'med tech': [],
+      'future tech': [],
+    }
+
+    shortlisted.forEach(r => {
+      const theme = themeMap[r.domain] || 'rural tech'
+      grouped[theme].push(r)
+    })
+
     const wb = XLSX.utils.book_new()
 
-    // Sheet 1: Team Details
-    const teamData = shortlisted.map((r, idx) => ({
-      'S.No': idx + 1,
-      'Team Name': r.team_name || r.teamName,
-      'Domain': r.domain,
-      'College': r.college,
-      'Team Size': r.team_size || r.teamSize,
-      'Project Title': r.project_title || r.projectTitle || '',
-      'Project Description': r.project_desc || r.projectDesc || '',
-      'Ticket ID': r.ticket_id || r.ticketId || '',
-      'PPT/PDF URL': r.ppt_url || r.ppt_link || '',
-      'Registered At': new Date(r.registered_at || r.registeredAt).toLocaleString(),
-    }))
-    const wsTeams = XLSX.utils.json_to_sheet(teamData)
-    XLSX.utils.book_append_sheet(wb, wsTeams, 'Team Details')
+    // Create each sheet
+    Object.keys(grouped).forEach(themeName => {
+      const teams = grouped[themeName]
+      
+      if (teams.length === 0) {
+        // Create empty sheet with headers
+        const emptyData = [
+          ['SL No.', 'Team Name', 'Participants Name', 'College name', 'Contact No.', 'E-mail ', 'Food', '', '', '', '', '', '', ''],
+          ['', '', '', '', '', '', 'Break Fast', '', 'Lunch', '', 'Dinner', '', '', ''],
+          ['', '', '', '', '', '', 'Non-veg', 'Veg', 'Non-veg', 'Veg', 'Non-veg', 'Veg', '', ''],
+        ]
+        const ws = XLSX.utils.aoa_to_sheet(emptyData)
+        XLSX.utils.book_append_sheet(wb, ws, themeName)
+        return
+      }
 
-    // Sheet 2: Member Details
-    const memberData = []
-    shortlisted.forEach((r, idx) => {
-      const members = r.members || []
-      members.forEach((m, mIdx) => {
-        memberData.push({
-          'S.No': memberData.length + 1,
-          'Team Name': r.team_name || r.teamName,
-          'Ticket ID': r.ticket_id || r.ticketId || '',
-          'Member Type': mIdx === 0 ? 'Leader' : `Member ${mIdx + 1}`,
-          'Name': m.name || '',
-          'Email': m.email || '',
-          'Phone': m.phone || '',
-          'Role': m.role || '',
-        })
-      })
-    })
-    const wsMembers = XLSX.utils.json_to_sheet(memberData)
-    XLSX.utils.book_append_sheet(wb, wsMembers, 'Member Details')
+      // Build data array
+      const sheetData = []
+      
+      // Row 1: Headers
+      sheetData.push(['SL No.', 'Team Name', 'Participants Name', 'College name', 'Contact No.', 'E-mail ', 'Food', '', '', '', '', '', '', ''])
+      
+      // Row 2: Food sub-headers
+      sheetData.push(['', '', '', '', '', '', 'Break Fast', '', 'Lunch', '', 'Dinner', '', '', ''])
+      
+      // Row 3: Food preferences (placeholder)
+      sheetData.push(['', '', '', '', '', '', 'Non-veg', 'Veg', 'Non-veg', 'Veg', 'Non-veg', 'Veg', '', ''])
 
-    // Sheet 3: Domain-wise Summary
-    const domainGroups = {}
-    shortlisted.forEach(r => {
-      const domain = r.domain
-      if (!domainGroups[domain]) domainGroups[domain] = []
-      domainGroups[domain].push({
-        'Team Name': r.team_name || r.teamName,
-        'College': r.college,
-        'Team Size': r.team_size || r.teamSize,
-        'Project Title': r.project_title || r.projectTitle || '',
-        'Ticket ID': r.ticket_id || r.ticketId || '',
-      })
-    })
-    const domainData = []
-    Object.keys(domainGroups).sort().forEach(domain => {
-      domainData.push({ 'Domain': domain, 'Team Count': domainGroups[domain].length, '': '' })
-      domainGroups[domain].forEach(team => {
-        domainData.push({ 'Domain': '', ...team })
-      })
-      domainData.push({}) // Empty row between domains
-    })
-    const wsDomains = XLSX.utils.json_to_sheet(domainData)
-    XLSX.utils.book_append_sheet(wb, wsDomains, 'Domain Summary')
-
-    // Sheet 4: Contact List (for bulk messaging)
-    const contactData = []
-    shortlisted.forEach(r => {
-      const members = r.members || []
-      members.forEach(m => {
-        if (m.phone) {
-          contactData.push({
-            'Name': m.name || '',
-            'Phone': m.phone || '',
-            'Email': m.email || '',
-            'Team': r.team_name || r.teamName,
-            'Domain': r.domain,
-          })
+      // Add teams
+      teams.forEach((team, idx) => {
+        const members = team.members || []
+        
+        // First member row (with SL No and Team Name)
+        if (members.length > 0) {
+          const firstMember = members[0]
+          sheetData.push([
+            idx + 1,                                    // SL No.
+            team.team_name || team.teamName,           // Team Name
+            firstMember.name || '',                     // Participants Name
+            team.college || '',                         // College name
+            firstMember.phone || '',                    // Contact No.
+            firstMember.email || '',                    // E-mail
+            '', '', '', '', '', '', '', ''              // Food columns (empty for now)
+          ])
         }
-      })
-    })
-    const wsContacts = XLSX.utils.json_to_sheet(contactData)
-    XLSX.utils.book_append_sheet(wb, wsContacts, 'Contact List')
 
-    // Sheet 5: Check-in List
-    const checkinData = shortlisted.map((r, idx) => ({
-      'S.No': idx + 1,
-      'Ticket ID': r.ticket_id || r.ticketId || '',
-      'Team Name': r.team_name || r.teamName,
-      'Domain': r.domain,
-      'Team Size': r.team_size || r.teamSize,
-      'Checked In': r.checked_in ? 'Yes' : 'No',
-      'Check-in Time': r.checked_in_at ? new Date(r.checked_in_at).toLocaleString() : '',
-      'Leader Name': r.members?.[0]?.name || '',
-      'Leader Phone': r.members?.[0]?.phone || '',
-    }))
-    const wsCheckin = XLSX.utils.json_to_sheet(checkinData)
-    XLSX.utils.book_append_sheet(wb, wsCheckin, 'Check-in List')
+        // Additional members (only name, contact, email)
+        for (let i = 1; i < members.length; i++) {
+          const member = members[i]
+          sheetData.push([
+            '',                                         // SL No. (empty)
+            '',                                         // Team Name (empty)
+            member.name || '',                          // Participants Name
+            '',                                         // College name (empty)
+            member.phone || '',                         // Contact No.
+            member.email || '',                         // E-mail
+            '', '', '', '', '', '', '', ''              // Food columns (empty)
+          ])
+        }
+
+        // Add 2 empty rows between teams
+        sheetData.push(['', '', '', '', '', '', '', '', '', '', '', '', '', ''])
+        sheetData.push(['', '', '', '', '', '', '', '', '', '', '', '', '', ''])
+      })
+
+      const ws = XLSX.utils.aoa_to_sheet(sheetData)
+      
+      // Set column widths for better readability
+      ws['!cols'] = [
+        { wch: 8 },   // SL No.
+        { wch: 20 },  // Team Name
+        { wch: 25 },  // Participants Name
+        { wch: 40 },  // College name
+        { wch: 15 },  // Contact No.
+        { wch: 30 },  // E-mail
+        { wch: 10 },  // Food columns
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+      ]
+
+      XLSX.utils.book_append_sheet(wb, ws, themeName)
+    })
 
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' })
@@ -376,7 +390,13 @@ export default function Admin() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    showToast(`Exported ${shortlisted.length} shortlisted teams in 5 sheets`, 'success')
+    
+    const totalTeams = shortlisted.length
+    const ruralCount = grouped['rural tech'].length
+    const medCount = grouped['med tech'].length
+    const futureCount = grouped['future tech'].length
+    
+    showToast(`Exported ${totalTeams} teams (Rural: ${ruralCount}, Med: ${medCount}, Future: ${futureCount})`, 'success')
   }
 
   const downloadPpt = async (reg) => {
