@@ -6,11 +6,6 @@
   z-index: 1;
 }
 
-/* Block any canvas elements that might appear on this page */
-.page canvas {
-  pointer-events: none !important;
-}
-
 .container {
   max-width: 800px;
   margin: 0 auto;
