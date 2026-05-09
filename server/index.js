@@ -591,67 +591,96 @@ app.get('/api/hint-responses-detail/:name', requireAuth, async (req, res) => {
 })
 
 app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
-  const { name, questionId, matchName, description } = req.body
-  
-  console.log('📝 Hint submission received:', { name, questionId, matchName, hasFile: !!req.file })
-  
-  let photoUrl = null
-
-  if (req.file) {
-    try {
-      const b64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
-      const result = await cloudinary.uploader.upload(b64, {
-        folder: 'techverse_hints',
-        resource_type: 'image',
-      })
-      photoUrl = result.secure_url
-      console.log('✅ Photo uploaded to Cloudinary:', photoUrl)
-    } catch (err) {
-      console.error('❌ Cloudinary upload failed:', err.message)
-      return res.status(500).json({ error: 'Photo upload failed' })
-    }
-  }
-
-  if (!photoUrl) {
-    console.error('❌ No photo URL')
-    return res.status(400).json({ error: 'Photo is required' })
-  }
-
   try {
-    // Check if this user already submitted this question
-    const existing = await pool.query(
-      `SELECT id FROM hint_responses WHERE name = $1 AND question_id = $2`,
-      [name, questionId]
-    )
+    const { name, questionId, matchName, description } = req.body
     
-    if (existing.rows.length > 0) {
-      // Update existing response
-      await pool.query(
-        `UPDATE hint_responses 
-         SET answer = $1, description = $2, photo_url = $3, submitted_at = NOW()
-         WHERE name = $4 AND question_id = $5`,
-        [matchName, description || null, photoUrl, name, questionId]
-      )
-      console.log('✅ Updated existing hint response')
-    } else {
-      // Insert new response
-      await pool.query(
-        `INSERT INTO hint_responses (name, question_id, answer, description, photo_url)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [name, questionId, matchName, description || null, photoUrl]
-      )
-      console.log('✅ Inserted new hint response')
+    console.log('📝 Hint submission received:', { 
+      name, 
+      questionId, 
+      matchName,
+      description: description?.substring(0, 50),
+      hasFile: !!req.file,
+      fileSize: req.file?.size,
+      fileMimetype: req.file?.mimetype
+    })
+    
+    if (!name || !questionId || !matchName) {
+      console.error('❌ Missing required fields:', { name: !!name, questionId: !!questionId, matchName: !!matchName })
+      return res.status(400).json({ error: 'Missing required fields' })
     }
     
-    res.json({ success: true })
+    let photoUrl = null
+
+    if (req.file) {
+      try {
+        console.log('📤 Uploading to Cloudinary...')
+        const b64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`
+        const result = await cloudinary.uploader.upload(b64, {
+          folder: 'techverse_hints',
+          resource_type: 'image',
+        })
+        photoUrl = result.secure_url
+        console.log('✅ Photo uploaded to Cloudinary:', photoUrl)
+      } catch (err) {
+        console.error('❌ Cloudinary upload failed:', err.message, err.stack)
+        return res.status(500).json({ error: 'Photo upload failed: ' + err.message })
+      }
+    }
+
+    if (!photoUrl) {
+      console.error('❌ No photo URL')
+      return res.status(400).json({ error: 'Photo is required' })
+    }
+
+    try {
+      console.log('💾 Saving to database...')
+      // Check if this user already submitted this question
+      const existing = await pool.query(
+        `SELECT id FROM hint_responses WHERE name = $1 AND question_id = $2`,
+        [name, questionId]
+      )
+      
+      if (existing.rows.length > 0) {
+        // Update existing response
+        await pool.query(
+          `UPDATE hint_responses 
+           SET answer = $1, description = $2, photo_url = $3, submitted_at = NOW()
+           WHERE name = $4 AND question_id = $5`,
+          [matchName, description || null, photoUrl, name, questionId]
+        )
+        console.log('✅ Updated existing hint response')
+      } else {
+        // Insert new response
+        await pool.query(
+          `INSERT INTO hint_responses (name, question_id, answer, description, photo_url)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [name, questionId, matchName, description || null, photoUrl]
+        )
+        console.log('✅ Inserted new hint response')
+      }
+      
+      res.json({ success: true })
+    } catch (err) {
+      console.error('❌ Database error:', err.message, err.stack)
+      res.status(500).json({ error: 'Database error: ' + err.message })
+    }
   } catch (err) {
-    console.error('❌ Database error:', err.message, err.stack)
-    res.status(500).json({ error: err.message })
+    console.error('❌ Unexpected error in hint-submit:', err.message, err.stack)
+    res.status(500).json({ error: 'Server error: ' + err.message })
   }
 })
 
 // ── Keep-alive ping ───────────────────────────────────────────
 app.get('/ping', (req, res) => res.send('pong'))
+
+// Version check
+app.get('/api/version', (req, res) => {
+  res.json({ 
+    version: '2.0.1', 
+    timestamp: new Date().toISOString(),
+    hint_submit_fixed: true 
+  })
+})
 
 // Self-ping every 14 minutes to prevent Render sleep
 setInterval(() => {
