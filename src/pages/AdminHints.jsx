@@ -22,6 +22,7 @@ export default function AdminHints({ getToken }) {
   const [responses, setResponses] = useState([])
   const [viewingPhoto, setViewingPhoto] = useState(null)
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   console.log('AdminHints component mounted')
 
@@ -92,6 +93,19 @@ export default function AdminHints({ getToken }) {
     team.members.every(m => m.is_complete)
   ).length
 
+  // Filter leaderboard based on search
+  const filteredLeaderboard = leaderboard.filter(entry => {
+    const query = searchQuery.toLowerCase()
+    return (
+      entry.name.toLowerCase().includes(query) ||
+      entry.team_name.toLowerCase().includes(query) ||
+      entry.ticket_id.toLowerCase().includes(query)
+    )
+  })
+
+  // Get top 20 completed members
+  const top20Completed = leaderboard.filter(entry => entry.is_complete).slice(0, 20)
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -121,42 +135,133 @@ export default function AdminHints({ getToken }) {
 
       {showLeaderboard ? (
         <div className={styles.leaderboard}>
-          <h3 className={styles.leaderboardTitle}>🏆 Top 20 Members - First to Complete All 10 Hints</h3>
-          {leaderboard.length === 0 ? (
-            <div className={styles.empty}>No one has completed all 10 hints yet!</div>
-          ) : (
-            <div className={styles.leaderboardTable}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Name</th>
-                    <th>Team</th>
-                    <th>Ticket ID</th>
-                    <th>Completion Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaderboard.map((entry) => (
-                    <tr key={entry.rank} className={entry.rank <= 3 ? styles.topThree : ''}>
-                      <td className={styles.rank}>
-                        {entry.rank === 1 && '🥇'}
-                        {entry.rank === 2 && '🥈'}
-                        {entry.rank === 3 && '🥉'}
-                        {entry.rank > 3 && `#${entry.rank}`}
-                      </td>
-                      <td className={styles.name}>{entry.name}</td>
-                      <td>{entry.team_name}</td>
-                      <td className={styles.ticketId}>{entry.ticket_id}</td>
-                      <td className={styles.time}>
-                        {new Date(entry.completion_time).toLocaleString()}
-                      </td>
+          <div className={styles.leaderboardHeader}>
+            <h3 className={styles.leaderboardTitle}>🏆 Hint Game Leaderboard - All Members</h3>
+            <input
+              type="text"
+              placeholder="🔍 Search by name, team, or ticket ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+
+          {/* Top 20 Completed Section */}
+          {top20Completed.length > 0 && (
+            <div className={styles.top20Section}>
+              <h4 className={styles.sectionTitle}>🌟 Top 20 - First to Complete All 10 Hints</h4>
+              <div className={styles.leaderboardTable}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Name</th>
+                      <th>Team</th>
+                      <th>Ticket ID</th>
+                      <th>Completed</th>
+                      <th>Completion Time</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {top20Completed.map((entry) => (
+                      <tr key={entry.rank} className={entry.rank <= 3 ? styles.topThree : ''}>
+                        <td className={styles.rank}>
+                          {entry.rank === 1 && '🥇'}
+                          {entry.rank === 2 && '🥈'}
+                          {entry.rank === 3 && '🥉'}
+                          {entry.rank > 3 && `#${entry.rank}`}
+                        </td>
+                        <td className={styles.name}>
+                          <button 
+                            className={styles.nameLink}
+                            onClick={() => viewMemberResponses(entry.name)}
+                          >
+                            {entry.name}
+                          </button>
+                        </td>
+                        <td>{entry.team_name}</td>
+                        <td className={styles.ticketId}>{entry.ticket_id}</td>
+                        <td className={styles.completed}>
+                          <span className={styles.completeBadge}>✅ {entry.completed_count}/10</span>
+                        </td>
+                        <td className={styles.time}>
+                          {new Date(entry.completion_time).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
+
+          {/* All Members Section */}
+          <div className={styles.allMembersSection}>
+            <h4 className={styles.sectionTitle}>
+              📋 All Members ({filteredLeaderboard.length} total)
+            </h4>
+            {filteredLeaderboard.length === 0 ? (
+              <div className={styles.empty}>
+                {searchQuery ? 'No members match your search.' : 'No members found.'}
+              </div>
+            ) : (
+              <div className={styles.leaderboardTable}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Name</th>
+                      <th>Team</th>
+                      <th>Ticket ID</th>
+                      <th>Progress</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredLeaderboard.map((entry) => (
+                      <tr 
+                        key={entry.rank} 
+                        className={entry.is_complete ? styles.completedRow : ''}
+                      >
+                        <td className={styles.rankNum}>#{entry.rank}</td>
+                        <td className={styles.name}>
+                          <button 
+                            className={styles.nameLink}
+                            onClick={() => viewMemberResponses(entry.name)}
+                            disabled={entry.completed_count === 0}
+                          >
+                            {entry.name}
+                          </button>
+                        </td>
+                        <td>{entry.team_name}</td>
+                        <td className={styles.ticketId}>{entry.ticket_id}</td>
+                        <td>
+                          <div className={styles.progressCell}>
+                            <div className={styles.progressBar} style={{
+                              width: `${(entry.completed_count / 10) * 100}%`,
+                              backgroundColor: entry.is_complete ? '#10b981' : '#f59e0b'
+                            }} />
+                            <span className={styles.progressText}>
+                              {entry.completed_count}/10
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          {entry.is_complete ? (
+                            <span className={styles.completeBadge}>✅ Complete</span>
+                          ) : entry.completed_count > 0 ? (
+                            <span className={styles.inProgressBadge}>⏳ In Progress</span>
+                          ) : (
+                            <span className={styles.notStartedBadge}>⚪ Not Started</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className={styles.teams}>

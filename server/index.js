@@ -590,34 +590,44 @@ app.get('/api/hint-responses-detail/:name', requireAuth, async (req, res) => {
   res.json(rows)
 })
 
-// Admin endpoint: Get leaderboard - top 20 members who completed all 10 hints first
+// Admin endpoint: Get leaderboard - all members sorted by completion
 app.get('/api/hint-leaderboard', requireAuth, async (req, res) => {
   const { rows } = await pool.query(`
-    WITH member_completion AS (
+    WITH member_stats AS (
       SELECT 
-        hr.name,
-        COUNT(DISTINCT hr.question_id) as completed_count,
-        MAX(hr.submitted_at) as completion_time,
+        m.name,
         m.registration_id,
         r.team_name,
-        r.ticket_id
-      FROM hint_responses hr
-      LEFT JOIN members m ON m.name = hr.name
+        r.ticket_id,
+        COUNT(DISTINCT hr.question_id) as completed_count,
+        MAX(hr.submitted_at) as completion_time,
+        CASE WHEN COUNT(DISTINCT hr.question_id) = 10 THEN 1 ELSE 0 END as is_complete
+      FROM members m
       LEFT JOIN registrations r ON r.id = m.registration_id
+      LEFT JOIN hint_responses hr ON hr.name = m.name
       WHERE r.status = 'shortlisted'
-      GROUP BY hr.name, m.registration_id, r.team_name, r.ticket_id
-      HAVING COUNT(DISTINCT hr.question_id) = 10
+      GROUP BY m.name, m.registration_id, r.team_name, r.ticket_id
     )
     SELECT 
-      ROW_NUMBER() OVER (ORDER BY completion_time ASC) as rank,
+      ROW_NUMBER() OVER (
+        ORDER BY 
+          is_complete DESC,
+          CASE WHEN is_complete = 1 THEN completion_time END ASC,
+          completed_count DESC,
+          name ASC
+      ) as rank,
       name,
       team_name,
       ticket_id,
       completed_count,
-      completion_time
-    FROM member_completion
-    ORDER BY completion_time ASC
-    LIMIT 20
+      completion_time,
+      is_complete
+    FROM member_stats
+    ORDER BY 
+      is_complete DESC,
+      CASE WHEN is_complete = 1 THEN completion_time END ASC,
+      completed_count DESC,
+      name ASC
   `)
   res.json(rows)
 })

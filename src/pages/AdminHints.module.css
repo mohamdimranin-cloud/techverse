@@ -333,11 +333,55 @@
   margin-top: 2rem;
 }
 
+.leaderboardHeader {
+  margin-bottom: 2rem;
+}
+
 .leaderboardTitle {
   font-size: 1.5rem;
   color: var(--neon-cyan);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: center;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  display: block;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--neon-cyan);
+}
+
+.top20Section {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--glass-border);
+}
+
+.allMembersSection {
+  margin-top: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  border-left: 4px solid var(--neon-cyan);
 }
 
 .leaderboardTable {
@@ -386,6 +430,10 @@
   background: rgba(255, 215, 0, 0.1);
 }
 
+.leaderboardTable .completedRow {
+  background: rgba(16, 185, 129, 0.03);
+}
+
 .rank {
   font-size: 1.5rem;
   font-weight: 700;
@@ -393,9 +441,37 @@
   width: 80px;
 }
 
+.rankNum {
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  width: 80px;
+}
+
 .name {
   font-weight: 600;
+}
+
+.nameLink {
+  background: none;
+  border: none;
   color: var(--neon-cyan);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: underline;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.nameLink:hover {
+  color: var(--neon-purple);
+}
+
+.nameLink:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .ticketId {
@@ -407,6 +483,61 @@
 .time {
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+.completed {
+  text-align: center;
+}
+
+.completeBadge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.inProgressBadge {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.notStartedBadge {
+  background: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.progressCell {
+  position: relative;
+  width: 150px;
+}
+
+.progressCell .progressBar {
+  height: 8px;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 .empty {
