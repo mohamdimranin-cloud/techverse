@@ -27,6 +27,11 @@ body {
 
 a { text-decoration: none; }
 
+/* Ensure all canvas elements don't block interactions */
+canvas {
+  pointer-events: none !important;
+}
+
 .glass-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
