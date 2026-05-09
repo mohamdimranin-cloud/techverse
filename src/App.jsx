@@ -18,13 +18,16 @@ export default function App() {
   const { pathname } = useLocation()
   const isAdmin = pathname.startsWith('/admin')
   const isHint = pathname.startsWith('/hint') // Disable 3D on hint page
-  const [intro, setIntro] = useState(!isAdmin)
+  const [intro, setIntro] = useState(!isAdmin && !isHint)
+
+  // Don't render 3D components at all on hint or admin pages
+  const show3D = !isAdmin && !isHint
 
   return (
     <>
-      {!isHint && <StarField />}
-      {!isHint && <SolarSystem />}
-      {!isHint && <Suspense fallback={null}><CosmonautFlying /></Suspense>}
+      {show3D && <StarField />}
+      {show3D && <SolarSystem />}
+      {show3D && <Suspense fallback={null}><CosmonautFlying /></Suspense>}
       {intro && <IntroLoader onDone={() => setIntro(false)} />}
       <Routes>
         <Route path="/admin" element={<Admin />} />
