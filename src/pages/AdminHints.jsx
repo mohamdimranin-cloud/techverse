@@ -225,13 +225,16 @@ export default function AdminHints({ getToken }) {
                       >
                         <td className={styles.rankNum}>#{entry.rank}</td>
                         <td className={styles.name}>
-                          <button 
-                            className={styles.nameLink}
-                            onClick={() => viewMemberResponses(entry.name)}
-                            disabled={entry.completed_count === 0}
-                          >
-                            {entry.name}
-                          </button>
+                          {entry.is_complete ? (
+                            <button 
+                              className={styles.nameLink}
+                              onClick={() => viewMemberResponses(entry.name)}
+                            >
+                              {entry.name}
+                            </button>
+                          ) : (
+                            <span>{entry.name}</span>
+                          )}
                         </td>
                         <td>{entry.team_name}</td>
                         <td className={styles.ticketId}>{entry.ticket_id}</td>
@@ -306,7 +309,7 @@ export default function AdminHints({ getToken }) {
                           {member.completed_count}/10 questions
                         </span>
                       </div>
-                      {member.completed_count > 0 && (
+                      {member.is_complete && (
                         <button 
                           className="btn btn-sm btn-outline"
                           onClick={() => viewMemberResponses(member.name)}
