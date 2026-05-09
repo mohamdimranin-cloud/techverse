@@ -16,10 +16,12 @@ const QUESTION_LABELS = {
 
 export default function AdminHints({ getToken }) {
   const [stats, setStats] = useState([])
+  const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedMember, setSelectedMember] = useState(null)
   const [responses, setResponses] = useState([])
   const [viewingPhoto, setViewingPhoto] = useState(null)
+  const [showLeaderboard, setShowLeaderboard] = useState(false)
 
   console.log('AdminHints component mounted')
 
@@ -42,9 +44,26 @@ export default function AdminHints({ getToken }) {
     }
   }
 
+  const loadLeaderboard = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://techverse-1-2fun.onrender.com'
+      const res = await fetch(`${apiUrl}/api/hint-leaderboard`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      })
+      const data = await res.json()
+      setLeaderboard(data)
+    } catch (err) {
+      console.error('Failed to load leaderboard:', err)
+    }
+  }
+
   useEffect(() => {
     loadStats()
-    const interval = setInterval(loadStats, 15000) // Refresh every 15s
+    loadLeaderboard()
+    const interval = setInterval(() => {
+      loadStats()
+      loadLeaderboard()
+    }, 15000) // Refresh every 15s
     return () => clearInterval(interval)
   }, [])
 
@@ -86,66 +105,118 @@ export default function AdminHints({ getToken }) {
             <div className={styles.statValue}>{fullyCompletedTeams}/{stats.length}</div>
             <div className={styles.statLabel}>Teams Fully Completed</div>
           </div>
+          <div className={styles.statCard}>
+            <div className={styles.statValue}>{leaderboard.length}</div>
+            <div className={styles.statLabel}>Leaderboard Entries</div>
+          </div>
         </div>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setShowLeaderboard(!showLeaderboard)}
+          style={{ marginTop: '1rem' }}
+        >
+          {showLeaderboard ? '📊 Show All Teams' : '🏆 Show Leaderboard (Top 20)'}
+        </button>
       </div>
 
-      <div className={styles.teams}>
-        {stats.map(team => {
-          const allComplete = team.members.every(m => m.is_complete)
-          const someComplete = team.members.some(m => m.is_complete)
-          
-          return (
-            <div key={team.registration_id} className={`${styles.teamCard} ${allComplete ? styles.complete : someComplete ? styles.partial : ''}`}>
-              <div className={styles.teamHeader}>
-                <div>
-                  <h3>{team.team_name}</h3>
-                  <span className={styles.statusBadge} style={{
-                    backgroundColor: team.status === 'payment successful' ? 'rgba(34, 211, 238, 0.2)' : 
-                                     team.status === 'payment pending' ? 'rgba(251, 146, 60, 0.2)' : 
-                                     'rgba(16, 185, 129, 0.2)',
-                    color: team.status === 'payment successful' ? '#22d3ee' : 
-                           team.status === 'payment pending' ? '#fb923c' : 
-                           '#10b981'
-                  }}>
-                    {team.status}
-                  </span>
-                </div>
-                {allComplete && <span className={styles.badge}>✅ All Complete</span>}
-              </div>
-              
-              <div className={styles.members}>
-                {team.members.map(member => (
-                  <div key={member.id} className={styles.memberRow}>
-                    <div className={styles.memberInfo}>
-                      <span className={styles.memberName}>{member.name}</span>
-                      <div className={styles.progress}>
-                        <div 
-                          className={styles.progressBar} 
-                          style={{ 
-                            width: `${(member.completed_count / 10) * 100}%`,
-                            backgroundColor: member.is_complete ? '#10b981' : '#f59e0b'
-                          }}
-                        />
-                      </div>
-                      <span className={styles.count}>
-                        {member.completed_count}/10 questions
-                      </span>
-                    </div>
-                    {member.completed_count > 0 && (
-                      <button 
-                        className="btn btn-sm btn-outline"
-                        onClick={() => viewMemberResponses(member.name)}
-                      >
-                        View Responses
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+      {showLeaderboard ? (
+        <div className={styles.leaderboard}>
+          <h3 className={styles.leaderboardTitle}>🏆 Top 20 Members - First to Complete All 10 Hints</h3>
+          {leaderboard.length === 0 ? (
+            <div className={styles.empty}>No one has completed all 10 hints yet!</div>
+          ) : (
+            <div className={styles.leaderboardTable}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Team</th>
+                    <th>Ticket ID</th>
+                    <th>Completion Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboard.map((entry) => (
+                    <tr key={entry.rank} className={entry.rank <= 3 ? styles.topThree : ''}>
+                      <td className={styles.rank}>
+                        {entry.rank === 1 && '🥇'}
+                        {entry.rank === 2 && '🥈'}
+                        {entry.rank === 3 && '🥉'}
+                        {entry.rank > 3 && `#${entry.rank}`}
+                      </td>
+                      <td className={styles.name}>{entry.name}</td>
+                      <td>{entry.team_name}</td>
+                      <td className={styles.ticketId}>{entry.ticket_id}</td>
+                      <td className={styles.time}>
+                        {new Date(entry.completion_time).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )
-        })}
-      </div>
+          )}
+        </div>
+      ) : (
+        <div className={styles.teams}>
+          {stats.map(team => {
+            const allComplete = team.members.every(m => m.is_complete)
+            const someComplete = team.members.some(m => m.is_complete)
+            
+            return (
+              <div key={team.registration_id} className={`${styles.teamCard} ${allComplete ? styles.complete : someComplete ? styles.partial : ''}`}>
+                <div className={styles.teamHeader}>
+                  <div>
+                    <h3>{team.team_name}</h3>
+                    <span className={styles.statusBadge} style={{
+                      backgroundColor: team.status === 'payment successful' ? 'rgba(34, 211, 238, 0.2)' : 
+                                       team.status === 'payment pending' ? 'rgba(251, 146, 60, 0.2)' : 
+                                       'rgba(16, 185, 129, 0.2)',
+                      color: team.status === 'payment successful' ? '#22d3ee' : 
+                             team.status === 'payment pending' ? '#fb923c' : 
+                             '#10b981'
+                    }}>
+                      {team.status}
+                    </span>
+                  </div>
+                  {allComplete && <span className={styles.badge}>✅ All Complete</span>}
+                </div>
+                
+                <div className={styles.members}>
+                  {team.members.map(member => (
+                    <div key={member.id} className={styles.memberRow}>
+                      <div className={styles.memberInfo}>
+                        <span className={styles.memberName}>{member.name}</span>
+                        <div className={styles.progress}>
+                          <div 
+                            className={styles.progressBar} 
+                            style={{ 
+                              width: `${(member.completed_count / 10) * 100}%`,
+                              backgroundColor: member.is_complete ? '#10b981' : '#f59e0b'
+                            }}
+                          />
+                        </div>
+                        <span className={styles.count}>
+                          {member.completed_count}/10 questions
+                        </span>
+                      </div>
+                      {member.completed_count > 0 && (
+                        <button 
+                          className="btn btn-sm btn-outline"
+                          onClick={() => viewMemberResponses(member.name)}
+                        >
+                          View Responses
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Response Detail Modal */}
       {selectedMember && (

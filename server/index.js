@@ -590,6 +590,38 @@ app.get('/api/hint-responses-detail/:name', requireAuth, async (req, res) => {
   res.json(rows)
 })
 
+// Admin endpoint: Get leaderboard - top 20 members who completed all 10 hints first
+app.get('/api/hint-leaderboard', requireAuth, async (req, res) => {
+  const { rows } = await pool.query(`
+    WITH member_completion AS (
+      SELECT 
+        hr.name,
+        COUNT(DISTINCT hr.question_id) as completed_count,
+        MAX(hr.submitted_at) as completion_time,
+        m.registration_id,
+        r.team_name,
+        r.ticket_id
+      FROM hint_responses hr
+      LEFT JOIN members m ON m.name = hr.name
+      LEFT JOIN registrations r ON r.id = m.registration_id
+      WHERE r.status = 'shortlisted'
+      GROUP BY hr.name, m.registration_id, r.team_name, r.ticket_id
+      HAVING COUNT(DISTINCT hr.question_id) = 10
+    )
+    SELECT 
+      ROW_NUMBER() OVER (ORDER BY completion_time ASC) as rank,
+      name,
+      team_name,
+      ticket_id,
+      completed_count,
+      completion_time
+    FROM member_completion
+    ORDER BY completion_time ASC
+    LIMIT 20
+  `)
+  res.json(rows)
+})
+
 app.post('/api/hint-submit', upload.single('photo'), async (req, res) => {
   try {
     const { name, questionId, matchName, description } = req.body

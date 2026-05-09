@@ -323,3 +323,95 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Leaderboard Styles */
+.leaderboard {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.leaderboardTitle {
+  font-size: 1.5rem;
+  color: var(--neon-cyan);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.leaderboardTable {
+  overflow-x: auto;
+}
+
+.leaderboardTable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboardTable thead {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboardTable th {
+  padding: 1rem;
+  text-align: left;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--glass-border);
+}
+
+.leaderboardTable td {
+  padding: 1rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.leaderboardTable tbody tr {
+  transition: background 0.3s ease;
+}
+
+.leaderboardTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.leaderboardTable .topThree {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.leaderboardTable .topThree:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.rank {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  width: 80px;
+}
+
+.name {
+  font-weight: 600;
+  color: var(--neon-cyan);
+}
+
+.ticketId {
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.time {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
